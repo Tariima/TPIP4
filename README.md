@@ -1,6 +1,6 @@
 # TPIP4
 
-Trabajo Práctico Integrador de Programación IV (TUP - UTN).
+Trabajo Práctico Integrador de Programación IV
 
 API para llevar el seguimiento de los entrenamientos de gimnasio y reservar turnos en gimnasios adheridos.
 
