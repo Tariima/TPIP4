@@ -37,26 +37,12 @@ La solución está armada con Clean Architecture:
 - `Infrastructure`: DbContext, migraciones, repositorios y servicios externos
 - `Presentation`: la Web API (controllers, middleware y Program.cs)
 
-## Cómo correrlo
-
-Hace falta el SDK de .NET 10 y SQL Server (con LocalDB alcanza).
-
-1. Clonar el repo.
-2. Cargar el secret del JWT con user-secrets (no se sube al repo):
-   ```
-   dotnet user-secrets init --project Presentation
-   dotnet user-secrets set "JwtSettings:SecretKey" "una-clave-de-32-caracteres-o-mas" --project Presentation
-   ```
-3. Crear la base:
-   ```
-   dotnet ef database update --project Infrastructure --startup-project Presentation
-   ```
-4. Correr el proyecto Presentation y entrar a `/swagger`.
-
 ## Deploy
 
 Pendiente. Cuando esté, acá va el link de la API en Azure.
 
 ## Integrantes
 
--
+- Gabriel Dino
+- Jeremías Paletta
+- Matías Sione
