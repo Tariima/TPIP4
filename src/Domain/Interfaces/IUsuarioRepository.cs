@@ -4,4 +4,5 @@ namespace Domain.Interfaces;
 
 public interface IUsuarioRepository : IRepositoryBase<Usuario>
 {
+    Task<Usuario?> GetByEmailAsync(string email);
 }
