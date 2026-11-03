@@ -1,4 +1,6 @@
 using Application.Interfaces;
+using Application.Models;
+using Application.Models.Request;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
@@ -12,5 +14,12 @@ public class UsuariosController : ControllerBase
     public UsuariosController(IUsuarioService usuarioService)
     {
         _usuarioService = usuarioService;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<UsuarioDTO>> Create([FromBody] CreationUsuarioDTO creationUsuarioDto)
+    {
+        var usuarioCreado = await _usuarioService.Create(creationUsuarioDto);
+        return Created($"api/usuarios/{usuarioCreado.Id}", usuarioCreado);
     }
 }
