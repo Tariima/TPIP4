@@ -1,10 +1,13 @@
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+// Cargar, editar y dar de baja beneficios se limita a AdminGimnasio en cada endpoint
+[Authorize(Roles = "AdminGimnasio,UsuarioComun")]
 public class BeneficiosController : ControllerBase
 {
     private readonly IBeneficioService _beneficioService;
