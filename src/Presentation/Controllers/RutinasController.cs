@@ -38,6 +38,13 @@ public class RutinasController : ControllerBase
         return Created($"api/rutinas/{rutinaCreada.Id}", rutinaCreada);
     }
 
+    [HttpPut("{id}")]
+    public async Task<ActionResult> Update([FromRoute] int id, [FromBody] UpdateRutinaDTO updateRutinaDto)
+    {
+        await _rutinaService.Update(GetIdUsuario(), id, updateRutinaDto);
+        return NoContent();
+    }
+
     private int GetIdUsuario()
     {
         return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
