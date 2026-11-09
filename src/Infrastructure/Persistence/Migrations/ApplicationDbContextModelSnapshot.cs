@@ -601,6 +601,18 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasBaseType("Domain.Entities.Usuario");
 
                     b.HasDiscriminator().HasValue("SuperAdmin");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Activo = true,
+                            Apellido = "Admin",
+                            Contrasena = "$2a$11$bjdAH2wJIDk04JQa3kP8cO9kgGk/conQEIKICUug66qzuzix0LINC",
+                            Email = "superadmin@tpip4.com",
+                            FechaRegistro = new DateTime(2026, 11, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Nombre = "Super"
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.UsuarioComun", b =>

@@ -143,6 +143,20 @@ public class ApplicationDbContext : DbContext
         // Los ejercicios vienen cargados de entrada, el usuario solo los elige
         modelBuilder.Entity<Ejercicio>().HasData(CreateEjercicioDataSeed());
 
+        // El superadmin no se puede registrar desde la API, así que también viene cargado de entrada.
+        // La contraseña es "admin1234". Se guarda el hash de BCrypt ya calculado porque si se calcula
+        // acá cambia en cada ejecución y EF lo tomaría como un cambio en los datos de la semilla
+        modelBuilder.Entity<SuperAdmin>().HasData(new SuperAdmin
+        {
+            Id = 1,
+            Nombre = "Super",
+            Apellido = "Admin",
+            Email = "superadmin@tpip4.com",
+            Contrasena = "$2a$11$bjdAH2wJIDk04JQa3kP8cO9kgGk/conQEIKICUug66qzuzix0LINC",
+            FechaRegistro = new DateTime(2026, 11, 9),
+            Activo = true
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
