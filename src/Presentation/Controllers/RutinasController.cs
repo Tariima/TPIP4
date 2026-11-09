@@ -25,6 +25,12 @@ public class RutinasController : ControllerBase
         return await _rutinaService.GetAll(GetIdUsuario());
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<RutinaDTO>> GetById([FromRoute] int id)
+    {
+        return await _rutinaService.GetById(GetIdUsuario(), id);
+    }
+
     [HttpPost]
     public async Task<ActionResult<RutinaDTO>> Create([FromBody] CreationRutinaDTO creationRutinaDto)
     {

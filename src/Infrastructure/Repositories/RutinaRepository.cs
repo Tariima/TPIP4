@@ -22,4 +22,12 @@ public class RutinaRepository : RepositoryBase<Rutina>, IRutinaRepository
             .Where(r => r.UsuarioComunId == usuarioComunId && r.Activa)
             .ToListAsync();
     }
+
+    public async Task<Rutina?> GetByIdConEjerciciosAsync(int id)
+    {
+        return await _context.Rutinas
+            .Include(r => r.EjerciciosRutina)
+                .ThenInclude(er => er.Ejercicio)
+            .FirstOrDefaultAsync(r => r.Id == id);
+    }
 }

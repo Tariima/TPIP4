@@ -6,5 +6,6 @@ namespace Application.Interfaces;
 public interface IRutinaService
 {
     Task<List<RutinaDTO>> GetAll(int idUsuario);
+    Task<RutinaDTO> GetById(int idUsuario, int idRutina);
     Task<RutinaDTO> Create(int idUsuario, CreationRutinaDTO creationRutinaDto);
 }

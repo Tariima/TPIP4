@@ -65,4 +65,24 @@ public class RutinaService : IRutinaService
         var rutinaCreada = await _rutinaRepository.CreateAsync(nuevaRutina);
         return RutinaDTO.Create(rutinaCreada);
     }
+
+    public async Task<RutinaDTO> GetById(int idUsuario, int idRutina)
+    {
+        var rutina = await GetRutinaDelUsuario(idUsuario, idRutina);
+        return RutinaDTO.Create(rutina);
+    }
+
+    // Devuelve la rutina solo si existe, está activa y es del usuario.
+    // Si es de otro usuario también da 404, así no se sabe que existe
+    private async Task<Rutina> GetRutinaDelUsuario(int idUsuario, int idRutina)
+    {
+        var rutina = await _rutinaRepository.GetByIdConEjerciciosAsync(idRutina);
+
+        if (rutina is null || !rutina.Activa || rutina.UsuarioComunId != idUsuario)
+        {
+            throw new NotFoundException($"No se encontró la rutina con id {idRutina}");
+        }
+
+        return rutina;
+    }
 }
