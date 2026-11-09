@@ -18,4 +18,9 @@ public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     {
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
     }
+
+    public async Task<UsuarioComun?> GetUsuarioComunByIdAsync(int id)
+    {
+        return await _context.UsuariosComunes.FirstOrDefaultAsync(u => u.Id == id);
+    }
 }

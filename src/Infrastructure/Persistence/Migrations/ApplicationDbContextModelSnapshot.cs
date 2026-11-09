@@ -87,6 +87,113 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Ejercicios");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Descripcion = "Acostado en el banco, bajar la barra hasta el pecho y empujarla hacia arriba.",
+                            GrupoMuscular = "Pecho",
+                            Nombre = "Press de banca"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Descripcion = "En el banco inclinado, empujar las mancuernas hacia arriba desde la altura del pecho.",
+                            GrupoMuscular = "Pecho",
+                            Nombre = "Press inclinado con mancuernas"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Descripcion = "Con el cuerpo recto, bajar el pecho hasta casi tocar el piso y volver a subir.",
+                            GrupoMuscular = "Pecho",
+                            Nombre = "Flexiones de brazos"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Descripcion = "Colgado de la barra, subir el cuerpo hasta que el mentón pase la barra.",
+                            GrupoMuscular = "Espalda",
+                            Nombre = "Dominadas"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Descripcion = "Con el torso inclinado hacia adelante, llevar la barra hacia el abdomen.",
+                            GrupoMuscular = "Espalda",
+                            Nombre = "Remo con barra"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Descripcion = "Sentado en la polea alta, bajar la barra hasta la altura del pecho.",
+                            GrupoMuscular = "Espalda",
+                            Nombre = "Jalón al pecho"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Descripcion = "Con la barra en la espalda, bajar flexionando las rodillas hasta que los muslos queden paralelos al piso.",
+                            GrupoMuscular = "Piernas",
+                            Nombre = "Sentadilla"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Descripcion = "Levantar la barra desde el piso con la espalda recta hasta quedar parado.",
+                            GrupoMuscular = "Piernas",
+                            Nombre = "Peso muerto"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Descripcion = "Sentado en la máquina, empujar la plataforma con los pies.",
+                            GrupoMuscular = "Piernas",
+                            Nombre = "Prensa de piernas"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Descripcion = "Parado, empujar la barra desde los hombros hasta arriba de la cabeza.",
+                            GrupoMuscular = "Hombros",
+                            Nombre = "Press militar"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Descripcion = "Con una mancuerna en cada mano, levantar los brazos por los costados hasta la altura de los hombros.",
+                            GrupoMuscular = "Hombros",
+                            Nombre = "Elevaciones laterales"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Descripcion = "Con los codos pegados al cuerpo, flexionar los brazos llevando la barra hacia los hombros.",
+                            GrupoMuscular = "Brazos",
+                            Nombre = "Curl de bíceps con barra"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Descripcion = "Con los codos fijos, estirar los brazos empujando la soga hacia abajo.",
+                            GrupoMuscular = "Brazos",
+                            Nombre = "Extensión de tríceps en polea"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Descripcion = "Acostado boca arriba, levantar los hombros del piso contrayendo el abdomen.",
+                            GrupoMuscular = "Abdominales",
+                            Nombre = "Crunch abdominal"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Descripcion = "Acostado boca arriba, levantar las piernas estiradas hasta formar un ángulo recto con el torso.",
+                            GrupoMuscular = "Abdominales",
+                            Nombre = "Elevación de piernas"
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.EjercicioRutina", b =>

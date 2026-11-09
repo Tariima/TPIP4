@@ -140,6 +140,122 @@ public class ApplicationDbContext : DbContext
             .Property(p => p.Monto)
             .HasPrecision(10, 2);
 
+        // Los ejercicios vienen cargados de entrada, el usuario solo los elige
+        modelBuilder.Entity<Ejercicio>().HasData(CreateEjercicioDataSeed());
+
         base.OnModelCreating(modelBuilder);
+    }
+
+    private Ejercicio[] CreateEjercicioDataSeed()
+    {
+        Ejercicio[] ejercicios = [
+            new Ejercicio
+            {
+                Id = 1,
+                Nombre = "Press de banca",
+                GrupoMuscular = "Pecho",
+                Descripcion = "Acostado en el banco, bajar la barra hasta el pecho y empujarla hacia arriba."
+            },
+            new Ejercicio
+            {
+                Id = 2,
+                Nombre = "Press inclinado con mancuernas",
+                GrupoMuscular = "Pecho",
+                Descripcion = "En el banco inclinado, empujar las mancuernas hacia arriba desde la altura del pecho."
+            },
+            new Ejercicio
+            {
+                Id = 3,
+                Nombre = "Flexiones de brazos",
+                GrupoMuscular = "Pecho",
+                Descripcion = "Con el cuerpo recto, bajar el pecho hasta casi tocar el piso y volver a subir."
+            },
+            new Ejercicio
+            {
+                Id = 4,
+                Nombre = "Dominadas",
+                GrupoMuscular = "Espalda",
+                Descripcion = "Colgado de la barra, subir el cuerpo hasta que el mentón pase la barra."
+            },
+            new Ejercicio
+            {
+                Id = 5,
+                Nombre = "Remo con barra",
+                GrupoMuscular = "Espalda",
+                Descripcion = "Con el torso inclinado hacia adelante, llevar la barra hacia el abdomen."
+            },
+            new Ejercicio
+            {
+                Id = 6,
+                Nombre = "Jalón al pecho",
+                GrupoMuscular = "Espalda",
+                Descripcion = "Sentado en la polea alta, bajar la barra hasta la altura del pecho."
+            },
+            new Ejercicio
+            {
+                Id = 7,
+                Nombre = "Sentadilla",
+                GrupoMuscular = "Piernas",
+                Descripcion = "Con la barra en la espalda, bajar flexionando las rodillas hasta que los muslos queden paralelos al piso."
+            },
+            new Ejercicio
+            {
+                Id = 8,
+                Nombre = "Peso muerto",
+                GrupoMuscular = "Piernas",
+                Descripcion = "Levantar la barra desde el piso con la espalda recta hasta quedar parado."
+            },
+            new Ejercicio
+            {
+                Id = 9,
+                Nombre = "Prensa de piernas",
+                GrupoMuscular = "Piernas",
+                Descripcion = "Sentado en la máquina, empujar la plataforma con los pies."
+            },
+            new Ejercicio
+            {
+                Id = 10,
+                Nombre = "Press militar",
+                GrupoMuscular = "Hombros",
+                Descripcion = "Parado, empujar la barra desde los hombros hasta arriba de la cabeza."
+            },
+            new Ejercicio
+            {
+                Id = 11,
+                Nombre = "Elevaciones laterales",
+                GrupoMuscular = "Hombros",
+                Descripcion = "Con una mancuerna en cada mano, levantar los brazos por los costados hasta la altura de los hombros."
+            },
+            new Ejercicio
+            {
+                Id = 12,
+                Nombre = "Curl de bíceps con barra",
+                GrupoMuscular = "Brazos",
+                Descripcion = "Con los codos pegados al cuerpo, flexionar los brazos llevando la barra hacia los hombros."
+            },
+            new Ejercicio
+            {
+                Id = 13,
+                Nombre = "Extensión de tríceps en polea",
+                GrupoMuscular = "Brazos",
+                Descripcion = "Con los codos fijos, estirar los brazos empujando la soga hacia abajo."
+            },
+            new Ejercicio
+            {
+                Id = 14,
+                Nombre = "Crunch abdominal",
+                GrupoMuscular = "Abdominales",
+                Descripcion = "Acostado boca arriba, levantar los hombros del piso contrayendo el abdomen."
+            },
+            new Ejercicio
+            {
+                Id = 15,
+                Nombre = "Elevación de piernas",
+                GrupoMuscular = "Abdominales",
+                Descripcion = "Acostado boca arriba, levantar las piernas estiradas hasta formar un ángulo recto con el torso."
+            },
+        ];
+
+        return ejercicios;
     }
 }
