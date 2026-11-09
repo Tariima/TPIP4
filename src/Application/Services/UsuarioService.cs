@@ -49,4 +49,59 @@ public class UsuarioService : IUsuarioService
 
         return UsuarioDTO.Create(usuarioAgregado);
     }
+
+    public async Task<UsuarioComunDTO> GetById(int id)
+    {
+        var usuario = await _usuarioRepository.GetUsuarioComunByIdAsync(id);
+
+        if (usuario is null)
+        {
+            throw new NotFoundException($"No se encontró el usuario con id {id}");
+        }
+
+        return UsuarioComunDTO.Create(usuario);
+    }
+
+    public async Task Update(int id, UpdateUsuarioDTO updateUsuarioDto)
+    {
+        var usuario = await _usuarioRepository.GetUsuarioComunByIdAsync(id);
+
+        if (usuario is null)
+        {
+            throw new NotFoundException($"No se encontró el usuario con id {id}");
+        }
+
+        if (updateUsuarioDto.Peso <= 0 || updateUsuarioDto.Altura <= 0)
+        {
+            throw new ValidationException("El peso y la altura deben ser mayores a cero");
+        }
+
+        usuario.Nombre = updateUsuarioDto.Nombre;
+        usuario.Apellido = updateUsuarioDto.Apellido;
+        usuario.FechaNacimiento = updateUsuarioDto.FechaNacimiento;
+        usuario.Peso = updateUsuarioDto.Peso;
+        usuario.Altura = updateUsuarioDto.Altura;
+
+        await _usuarioRepository.UpdateAsync(usuario);
+    }
+
+    public async Task UpdateContrasena(int id, UpdateContrasenaDTO updateContrasenaDto)
+    {
+        var usuario = await _usuarioRepository.GetByIdAsync(id);
+
+        if (usuario is null)
+        {
+            throw new NotFoundException($"No se encontró el usuario con id {id}");
+        }
+
+        // Se pide la contraseña actual para que no se pueda cambiar solo con el token
+        if (!_passwordHasher.Verify(updateContrasenaDto.ContrasenaActual, usuario.Contrasena))
+        {
+            throw new ValidationException("La contraseña actual es incorrecta");
+        }
+
+        usuario.Contrasena = _passwordHasher.Hash(updateContrasenaDto.ContrasenaNueva);
+
+        await _usuarioRepository.UpdateAsync(usuario);
+    }
 }
