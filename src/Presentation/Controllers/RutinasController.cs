@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Models;
+using Application.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -22,6 +23,13 @@ public class RutinasController : ControllerBase
     public async Task<ActionResult<List<RutinaDTO>>> GetAll()
     {
         return await _rutinaService.GetAll(GetIdUsuario());
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<RutinaDTO>> Create([FromBody] CreationRutinaDTO creationRutinaDto)
+    {
+        var rutinaCreada = await _rutinaService.Create(GetIdUsuario(), creationRutinaDto);
+        return Created($"api/rutinas/{rutinaCreada.Id}", rutinaCreada);
     }
 
     private int GetIdUsuario()
