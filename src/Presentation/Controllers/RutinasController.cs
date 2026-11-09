@@ -45,6 +45,13 @@ public class RutinasController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete([FromRoute] int id)
+    {
+        await _rutinaService.Delete(GetIdUsuario(), id);
+        return NoContent();
+    }
+
     private int GetIdUsuario()
     {
         return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

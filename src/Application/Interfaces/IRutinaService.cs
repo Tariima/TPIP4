@@ -9,4 +9,5 @@ public interface IRutinaService
     Task<RutinaDTO> GetById(int idUsuario, int idRutina);
     Task<RutinaDTO> Create(int idUsuario, CreationRutinaDTO creationRutinaDto);
     Task Update(int idUsuario, int idRutina, UpdateRutinaDTO updateRutinaDto);
+    Task Delete(int idUsuario, int idRutina);
 }

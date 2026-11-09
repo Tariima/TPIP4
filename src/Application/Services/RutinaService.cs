@@ -56,6 +56,16 @@ public class RutinaService : IRutinaService
         await _rutinaRepository.UpdateAsync(rutina);
     }
 
+    // Baja lógica: la rutina queda en la base para no perder los entrenamientos que la usan
+    public async Task Delete(int idUsuario, int idRutina)
+    {
+        var rutina = await GetRutinaDelUsuario(idUsuario, idRutina);
+
+        rutina.Activa = false;
+
+        await _rutinaRepository.UpdateAsync(rutina);
+    }
+
     // Valida los ejercicios que mandó el cliente y arma las filas de EjercicioRutina.
     // Lo usan Create y Update, así las reglas están en un solo lugar
     private async Task<List<EjercicioRutina>> ArmarEjerciciosRutina(List<CreationEjercicioRutinaDTO> ejercicios)
