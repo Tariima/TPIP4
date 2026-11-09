@@ -1,6 +1,8 @@
 using Application.Interfaces;
+using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Presentation.Controllers;
 
@@ -14,5 +16,16 @@ public class RutinasController : ControllerBase
     public RutinasController(IRutinaService rutinaService)
     {
         _rutinaService = rutinaService;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<RutinaDTO>>> GetAll()
+    {
+        return await _rutinaService.GetAll(GetIdUsuario());
+    }
+
+    private int GetIdUsuario()
+    {
+        return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
     }
 }
