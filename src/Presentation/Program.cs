@@ -7,7 +7,10 @@ using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
 using Presentation.Middleware;
+using System.Net.Http.Headers;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,6 +90,30 @@ builder.Services.AddScoped<IHorarioRepository, HorarioRepository>();
 builder.Services.AddScoped<IBeneficioRepository, BeneficioRepository>();
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
 #endregion
+
+// Cliente HTTP para Mercado Pago con HttpClientFactory. La factory maneja la vida de las conexiones,
+// y el resilience handler (Polly) reintenta si Mercado Pago falla o no responde
+builder.Services.AddHttpClient<IMercadoPagoService, MercadoPagoService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["MercadoPago:BaseUrl"]!);
+    // El token no está en appsettings: se carga con user-secrets (local) o variables de entorno (Azure)
+    client.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", builder.Configuration["MercadoPago:AccessToken"]);
+})
+.AddResilienceHandler("mercadopago", pipeline =>
+{
+    // Hasta 3 reintentos ante errores temporales (5xx, 408, 429 o sin conexión),
+    // esperando cada vez más entre uno y otro (1s, 2s, 4s)
+    pipeline.AddRetry(new HttpRetryStrategyOptions
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        BackoffType = DelayBackoffType.Exponential
+    });
+
+    // Cada intento corta a los 10 segundos para no dejar colgado al usuario
+    pipeline.AddTimeout(TimeSpan.FromSeconds(10));
+});
 
 var app = builder.Build();
 
