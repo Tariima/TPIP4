@@ -9,4 +9,5 @@ public interface IEntrenamientoService
     Task<EntrenamientoDTO> GetById(int idUsuario, int idEntrenamiento);
     Task<EntrenamientoDTO> Create(int idUsuario, CreationEntrenamientoDTO creationEntrenamientoDto);
     Task Update(int idUsuario, int idEntrenamiento, UpdateEntrenamientoDTO updateEntrenamientoDto);
+    Task Delete(int idUsuario, int idEntrenamiento);
 }

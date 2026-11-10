@@ -83,6 +83,14 @@ public class EntrenamientoService : IEntrenamientoService
         await _entrenamientoRepository.UpdateAsync(entrenamiento);
     }
 
+    // Borrado físico: del entrenamiento no depende nada y sus series se borran en cascada
+    public async Task Delete(int idUsuario, int idEntrenamiento)
+    {
+        var entrenamiento = await GetEntrenamientoDelUsuario(idUsuario, idEntrenamiento);
+
+        await _entrenamientoRepository.DeleteAsync(entrenamiento);
+    }
+
     // Devuelve el entrenamiento solo si existe y es del usuario.
     // Si es de otro usuario también da 404, así no se sabe que existe.
     // Lo van a usar también Update y Delete

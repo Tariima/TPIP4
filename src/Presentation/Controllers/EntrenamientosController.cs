@@ -46,6 +46,13 @@ public class EntrenamientosController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete([FromRoute] int id)
+    {
+        await _entrenamientoService.Delete(GetIdUsuario(), id);
+        return NoContent();
+    }
+
     private int GetIdUsuario()
     {
         return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
