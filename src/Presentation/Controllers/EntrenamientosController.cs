@@ -1,6 +1,9 @@
 using Application.Interfaces;
+using Application.Models;
+using Application.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Presentation.Controllers;
 
@@ -14,5 +17,24 @@ public class EntrenamientosController : ControllerBase
     public EntrenamientosController(IEntrenamientoService entrenamientoService)
     {
         _entrenamientoService = entrenamientoService;
+    }
+
+    // Historial: las fechas van en la URL y son opcionales, ej: api/entrenamientos?desde=2026-11-01&hasta=2026-11-30
+    [HttpGet]
+    public async Task<ActionResult<List<EntrenamientoDTO>>> GetAll([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+    {
+        return await _entrenamientoService.GetAll(GetIdUsuario(), desde, hasta);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<EntrenamientoDTO>> Create([FromBody] CreationEntrenamientoDTO creationEntrenamientoDto)
+    {
+        var entrenamientoCreado = await _entrenamientoService.Create(GetIdUsuario(), creationEntrenamientoDto);
+        return Created($"api/entrenamientos/{entrenamientoCreado.Id}", entrenamientoCreado);
+    }
+
+    private int GetIdUsuario()
+    {
+        return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
     }
 }

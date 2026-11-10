@@ -1,6 +1,7 @@
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
@@ -11,5 +12,30 @@ public class EntrenamientoRepository : RepositoryBase<Entrenamiento>, IEntrenami
     public EntrenamientoRepository(ApplicationDbContext context) : base(context)
     {
         _context = context;
+    }
+
+    public async Task<List<Entrenamiento>> GetByUsuarioAsync(int usuarioComunId, DateTime? desde, DateTime? hasta)
+    {
+        var query = _context.Entrenamientos
+            .Include(e => e.Rutina)
+            .Include(e => e.RegistrosSerie)
+                .ThenInclude(rs => rs.Ejercicio)
+            .Where(e => e.UsuarioComunId == usuarioComunId);
+
+        // Los filtros se agregan solo si vienen. Se compara solo el día para que
+        // "hasta" incluya los entrenamientos de ese día a cualquier hora
+        if (desde is not null)
+        {
+            query = query.Where(e => e.Fecha.Date >= desde.Value.Date);
+        }
+
+        if (hasta is not null)
+        {
+            query = query.Where(e => e.Fecha.Date <= hasta.Value.Date);
+        }
+
+        return await query
+            .OrderByDescending(e => e.Fecha)
+            .ToListAsync();
     }
 }
