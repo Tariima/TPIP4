@@ -39,6 +39,13 @@ public class EntrenamientosController : ControllerBase
         return Created($"api/entrenamientos/{entrenamientoCreado.Id}", entrenamientoCreado);
     }
 
+    [HttpPut("{id}")]
+    public async Task<ActionResult> Update([FromRoute] int id, [FromBody] UpdateEntrenamientoDTO updateEntrenamientoDto)
+    {
+        await _entrenamientoService.Update(GetIdUsuario(), id, updateEntrenamientoDto);
+        return NoContent();
+    }
+
     private int GetIdUsuario()
     {
         return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

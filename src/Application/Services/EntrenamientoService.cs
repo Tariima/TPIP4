@@ -56,6 +56,33 @@ public class EntrenamientoService : IEntrenamientoService
         return EntrenamientoDTO.Create(entrenamientoCreado);
     }
 
+    public async Task Update(int idUsuario, int idEntrenamiento, UpdateEntrenamientoDTO updateEntrenamientoDto)
+    {
+        var entrenamiento = await GetEntrenamientoDelUsuario(idUsuario, idEntrenamiento);
+        ValidarDatosEntrenamiento(updateEntrenamientoDto.Fecha, updateEntrenamientoDto.DuracionMinutos);
+
+        // La rutina se valida solo si cambió. Si el entrenamiento se basó en una rutina que
+        // después se dio de baja, se tiene que poder seguir editando sin que dé 404
+        if (updateEntrenamientoDto.RutinaId != entrenamiento.RutinaId)
+        {
+            var rutina = await GetRutinaDelUsuario(idUsuario, updateEntrenamientoDto.RutinaId);
+            entrenamiento.Rutina = rutina;
+            entrenamiento.RutinaId = rutina?.Id;
+        }
+
+        var registrosSerie = await ArmarRegistrosSerie(updateEntrenamientoDto.Series);
+
+        entrenamiento.Fecha = updateEntrenamientoDto.Fecha;
+        entrenamiento.DuracionMinutos = updateEntrenamientoDto.DuracionMinutos;
+        entrenamiento.Observaciones = updateEntrenamientoDto.Observaciones;
+
+        // Las series anteriores se sacan de la lista y EF las borra de la tabla
+        entrenamiento.RegistrosSerie.Clear();
+        entrenamiento.RegistrosSerie.AddRange(registrosSerie);
+
+        await _entrenamientoRepository.UpdateAsync(entrenamiento);
+    }
+
     // Devuelve el entrenamiento solo si existe y es del usuario.
     // Si es de otro usuario también da 404, así no se sabe que existe.
     // Lo van a usar también Update y Delete
