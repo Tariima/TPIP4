@@ -4,4 +4,5 @@ namespace Domain.Interfaces;
 
 public interface ISuscripcionRepository : IRepositoryBase<Suscripcion>
 {
+    Task<bool> TieneSuscripcionActivaAsync(int usuarioComunId);
 }

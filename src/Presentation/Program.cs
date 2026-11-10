@@ -69,6 +69,7 @@ builder.Services.AddScoped<ISolicitudCuentaGimnasioService, SolicitudCuentaGimna
 builder.Services.AddScoped<IHorarioService, HorarioService>();
 builder.Services.AddScoped<IBeneficioService, BeneficioService>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
+builder.Services.AddScoped<IProgresoService, ProgresoService>();
 builder.Services.AddScoped<ICustomAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 #endregion
