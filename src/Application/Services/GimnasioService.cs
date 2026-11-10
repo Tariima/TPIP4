@@ -1,4 +1,8 @@
 using Application.Interfaces;
+using Application.Models;
+using Application.Models.Request;
+using Domain.Entities;
+using Domain.Exceptions;
 using Domain.Interfaces;
 
 namespace Application.Services;
@@ -10,5 +14,91 @@ public class GimnasioService : IGimnasioService
     public GimnasioService(IGimnasioRepository gimnasioRepository)
     {
         _gimnasioRepository = gimnasioRepository;
+    }
+
+    public async Task<List<GimnasioDTO>> GetActivos()
+    {
+        var gimnasioList = await _gimnasioRepository.GetActivosAsync();
+        return GimnasioDTO.CreateList(gimnasioList);
+    }
+
+    // Trae también los dados de baja, para el superadmin
+    public async Task<List<GimnasioDTO>> GetAll()
+    {
+        var gimnasioList = await _gimnasioRepository.GetAllAsync();
+        return GimnasioDTO.CreateList(gimnasioList);
+    }
+
+    public async Task<GimnasioDTO> GetById(int idGimnasio)
+    {
+        var gimnasio = await GetGimnasioActivo(idGimnasio);
+        return GimnasioDTO.Create(gimnasio);
+    }
+
+    public async Task<GimnasioDTO> Create(int idSuperAdmin, CreationGimnasioDTO creationGimnasioDto)
+    {
+        var nuevoGimnasio = new Gimnasio();
+
+        nuevoGimnasio.Nombre = creationGimnasioDto.Nombre;
+        nuevoGimnasio.Direccion = creationGimnasioDto.Direccion;
+        nuevoGimnasio.Telefono = creationGimnasioDto.Telefono;
+        nuevoGimnasio.Email = creationGimnasioDto.Email;
+        nuevoGimnasio.FechaAlta = DateTime.Now;
+        nuevoGimnasio.Activo = true;
+        nuevoGimnasio.SuperAdminId = idSuperAdmin;
+
+        var gimnasioCreado = await _gimnasioRepository.CreateAsync(nuevoGimnasio);
+        return GimnasioDTO.Create(gimnasioCreado);
+    }
+
+    public async Task Update(int idGimnasio, CreationGimnasioDTO creationGimnasioDto)
+    {
+        var gimnasio = await GetGimnasioActivo(idGimnasio);
+
+        gimnasio.Nombre = creationGimnasioDto.Nombre;
+        gimnasio.Direccion = creationGimnasioDto.Direccion;
+        gimnasio.Telefono = creationGimnasioDto.Telefono;
+        gimnasio.Email = creationGimnasioDto.Email;
+
+        await _gimnasioRepository.UpdateAsync(gimnasio);
+    }
+
+    // Baja lógica: el gimnasio queda en la base para no perder las reservas y solicitudes que lo usan.
+    // Sus horarios y beneficios también se dan de baja, así no se pueden reservar ni ver
+    public async Task Delete(int idGimnasio)
+    {
+        var gimnasio = await _gimnasioRepository.GetByIdConHorariosYBeneficiosAsync(idGimnasio);
+
+        if (gimnasio is null || !gimnasio.Activo)
+        {
+            throw new NotFoundException($"No se encontró el gimnasio con id {idGimnasio}");
+        }
+
+        gimnasio.Activo = false;
+
+        foreach (var horario in gimnasio.Horarios)
+        {
+            horario.Activo = false;
+        }
+
+        foreach (var beneficio in gimnasio.Beneficios)
+        {
+            beneficio.Activo = false;
+        }
+
+        await _gimnasioRepository.UpdateAsync(gimnasio);
+    }
+
+    // Devuelve el gimnasio solo si existe y está activo
+    private async Task<Gimnasio> GetGimnasioActivo(int idGimnasio)
+    {
+        var gimnasio = await _gimnasioRepository.GetByIdAsync(idGimnasio);
+
+        if (gimnasio is null || !gimnasio.Activo)
+        {
+            throw new NotFoundException($"No se encontró el gimnasio con id {idGimnasio}");
+        }
+
+        return gimnasio;
     }
 }
