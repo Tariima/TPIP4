@@ -52,8 +52,9 @@ builder.Services.AddAuthentication("Bearer")
 
 // Agregar el ApplicationDbContext al contenedor de servicios
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+// EnableRetryOnFailure reintenta la conexión si la base de Azure está pausada y tarda en despertar
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 // Configurar servicios y repositorios como Scoped
 #region Services
