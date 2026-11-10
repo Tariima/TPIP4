@@ -38,4 +38,13 @@ public class EntrenamientoRepository : RepositoryBase<Entrenamiento>, IEntrenami
             .OrderByDescending(e => e.Fecha)
             .ToListAsync();
     }
+
+    public async Task<Entrenamiento?> GetByIdConSeriesAsync(int id)
+    {
+        return await _context.Entrenamientos
+            .Include(e => e.Rutina)
+            .Include(e => e.RegistrosSerie)
+                .ThenInclude(rs => rs.Ejercicio)
+            .FirstOrDefaultAsync(e => e.Id == id);
+    }
 }

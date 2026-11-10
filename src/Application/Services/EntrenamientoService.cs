@@ -31,6 +31,12 @@ public class EntrenamientoService : IEntrenamientoService
         return EntrenamientoDTO.CreateList(entrenamientoList);
     }
 
+    public async Task<EntrenamientoDTO> GetById(int idUsuario, int idEntrenamiento)
+    {
+        var entrenamiento = await GetEntrenamientoDelUsuario(idUsuario, idEntrenamiento);
+        return EntrenamientoDTO.Create(entrenamiento);
+    }
+
     public async Task<EntrenamientoDTO> Create(int idUsuario, CreationEntrenamientoDTO creationEntrenamientoDto)
     {
         ValidarDatosEntrenamiento(creationEntrenamientoDto.Fecha, creationEntrenamientoDto.DuracionMinutos);
@@ -48,6 +54,21 @@ public class EntrenamientoService : IEntrenamientoService
 
         var entrenamientoCreado = await _entrenamientoRepository.CreateAsync(nuevoEntrenamiento);
         return EntrenamientoDTO.Create(entrenamientoCreado);
+    }
+
+    // Devuelve el entrenamiento solo si existe y es del usuario.
+    // Si es de otro usuario también da 404, así no se sabe que existe.
+    // Lo van a usar también Update y Delete
+    private async Task<Entrenamiento> GetEntrenamientoDelUsuario(int idUsuario, int idEntrenamiento)
+    {
+        var entrenamiento = await _entrenamientoRepository.GetByIdConSeriesAsync(idEntrenamiento);
+
+        if (entrenamiento is null || entrenamiento.UsuarioComunId != idUsuario)
+        {
+            throw new NotFoundException($"No se encontró el entrenamiento con id {idEntrenamiento}");
+        }
+
+        return entrenamiento;
     }
 
     private void ValidarDatosEntrenamiento(DateTime fecha, int duracionMinutos)

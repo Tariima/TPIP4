@@ -26,6 +26,12 @@ public class EntrenamientosController : ControllerBase
         return await _entrenamientoService.GetAll(GetIdUsuario(), desde, hasta);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<EntrenamientoDTO>> GetById([FromRoute] int id)
+    {
+        return await _entrenamientoService.GetById(GetIdUsuario(), id);
+    }
+
     [HttpPost]
     public async Task<ActionResult<EntrenamientoDTO>> Create([FromBody] CreationEntrenamientoDTO creationEntrenamientoDto)
     {
