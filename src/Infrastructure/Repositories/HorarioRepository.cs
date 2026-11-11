@@ -20,4 +20,11 @@ public class HorarioRepository : RepositoryBase<Horario>, IHorarioRepository
             .Where(h => h.GimnasioId == gimnasioId && h.Activo)
             .ToListAsync();
     }
+
+    public async Task<Horario?> GetByIdConGimnasioAsync(int id)
+    {
+        return await _context.Horarios
+            .Include(h => h.Gimnasio)
+            .FirstOrDefaultAsync(h => h.Id == id);
+    }
 }
