@@ -18,6 +18,13 @@ public class SuscripcionesController : ControllerBase
         _suscripcionService = suscripcionService;
     }
 
+    // La suscripción del usuario con todos sus pagos
+    [HttpGet]
+    public async Task<ActionResult<SuscripcionDTO>> GetMiSuscripcion()
+    {
+        return await _suscripcionService.GetMiSuscripcion(GetIdUsuario());
+    }
+
     // Contratar o renovar Pro: devuelve el link de Mercado Pago para pagar un mes
     [HttpPost("pagar")]
     public async Task<ActionResult<LinkPagoDTO>> Pagar()

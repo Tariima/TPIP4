@@ -2,6 +2,7 @@ using Application.Interfaces;
 using Application.Models;
 using Domain.Entities;
 using Domain.Enums;
+using Domain.Exceptions;
 using Domain.Interfaces;
 
 namespace Application.Services;
@@ -19,6 +20,19 @@ public class SuscripcionService : ISuscripcionService
         _pagoRepository = pagoRepository;
         _mercadoPagoService = mercadoPagoService;
         _suscripcionSettings = suscripcionSettings;
+    }
+
+    public async Task<SuscripcionDTO> GetMiSuscripcion(int idUsuario)
+    {
+        var suscripcion = await _suscripcionRepository.GetByUsuarioAsync(idUsuario);
+
+        // Si nunca pagó no tiene suscripción
+        if (suscripcion is null)
+        {
+            throw new NotFoundException("No tenés una suscripción");
+        }
+
+        return SuscripcionDTO.Create(suscripcion);
     }
 
     // Sirve para contratar y para renovar: en los dos casos se paga un mes.
