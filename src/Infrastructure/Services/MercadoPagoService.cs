@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Models;
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -55,9 +56,20 @@ public class MercadoPagoService : IMercadoPagoService
         return ConvertirOrden(orden!);
     }
 
-    public async Task<OrdenMercadoPagoDTO> GetOrdenAsync(string idOrden)
+    // Devuelve null si la orden no existe (Mercado Pago responde 404, o 400 si el id tiene un formato inválido).
+    // Cualquier otro error se deja seguir
+    public async Task<OrdenMercadoPagoDTO?> GetOrdenAsync(string idOrden)
     {
-        var orden = await _httpClient.GetFromJsonAsync<OrdenRespuesta>($"v1/orders/{idOrden}", _jsonOptions);
+        var response = await _httpClient.GetAsync($"v1/orders/{idOrden}");
+
+        if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        var orden = await response.Content.ReadFromJsonAsync<OrdenRespuesta>(_jsonOptions);
         return ConvertirOrden(orden!);
     }
 

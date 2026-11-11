@@ -6,5 +6,5 @@ namespace Application.Interfaces;
 public interface IMercadoPagoService
 {
     Task<OrdenMercadoPagoDTO> CrearOrdenAsync(int idPago, decimal monto, string descripcion);
-    Task<OrdenMercadoPagoDTO> GetOrdenAsync(string idOrden);
+    Task<OrdenMercadoPagoDTO?> GetOrdenAsync(string idOrden);
 }
