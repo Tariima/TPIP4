@@ -10,8 +10,9 @@ namespace Application.Services;
 
 public class HorarioService : IHorarioService
 {
-    // Días válidos para un horario. Se guardan siempre escritos así, sin importar cómo los mande el admin
-    private static readonly string[] DiasSemana = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
+    // Días válidos para un horario. Se guardan siempre escritos así, sin importar cómo los mande el admin.
+    // Es público porque las reservas lo usan para saber qué día de la semana es una fecha
+    public static readonly string[] DiasSemana = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
 
     private readonly IHorarioRepository _horarioRepository;
     private readonly IUsuarioRepository _usuarioRepository;
