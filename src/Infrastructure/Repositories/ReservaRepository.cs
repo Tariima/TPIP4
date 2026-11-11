@@ -49,4 +49,17 @@ public class ReservaRepository : RepositoryBase<Reserva>, IReservaRepository
                 .ThenInclude(h => h.Gimnasio)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
+
+    // Reservas de todos los horarios del gimnasio con turno entre esas dos fechas (las dos incluidas)
+    public async Task<List<Reserva>> GetByGimnasioAsync(int gimnasioId, DateTime desde, DateTime hasta)
+    {
+        return await _context.Reservas
+            .Include(r => r.Horario)
+            .Include(r => r.UsuarioComun)
+            .Where(r => r.Horario.GimnasioId == gimnasioId
+                && r.FechaTurno.Date >= desde.Date
+                && r.FechaTurno.Date <= hasta.Date)
+            .OrderBy(r => r.FechaTurno)
+            .ToListAsync();
+    }
 }

@@ -13,12 +13,15 @@ public class ReservaService : IReservaService
     private readonly IReservaRepository _reservaRepository;
     private readonly IHorarioRepository _horarioRepository;
     private readonly IGimnasioRepository _gimnasioRepository;
+    private readonly IUsuarioRepository _usuarioRepository;
 
-    public ReservaService(IReservaRepository reservaRepository, IHorarioRepository horarioRepository, IGimnasioRepository gimnasioRepository)
+    public ReservaService(IReservaRepository reservaRepository, IHorarioRepository horarioRepository,
+        IGimnasioRepository gimnasioRepository, IUsuarioRepository usuarioRepository)
     {
         _reservaRepository = reservaRepository;
         _horarioRepository = horarioRepository;
         _gimnasioRepository = gimnasioRepository;
+        _usuarioRepository = usuarioRepository;
     }
 
     // Horarios del gimnasio para el día de la semana de esa fecha que todavía tienen lugar
@@ -142,6 +145,132 @@ public class ReservaService : IReservaService
         reserva.FechaCancelacion = DateTime.Now;
 
         await _reservaRepository.UpdateAsync(reserva);
+    }
+
+    // Reservas del gimnasio del admin en una fecha. El horario es opcional: si viene, se filtra por ese horario
+    public async Task<List<ReservaGimnasioDTO>> GetReservasDelGimnasio(int idAdmin, DateTime? fecha, int? horarioId)
+    {
+        if (fecha is null)
+        {
+            throw new ValidationException("La fecha es requerida");
+        }
+
+        int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
+        var reservaList = await _reservaRepository.GetByGimnasioAsync(gimnasioId, fecha.Value, fecha.Value);
+
+        if (horarioId is not null)
+        {
+            reservaList = reservaList.Where(r => r.HorarioId == horarioId).ToList();
+        }
+
+        return ReservaGimnasioDTO.CreateList(reservaList);
+    }
+
+    public async Task<EstadisticasGimnasioDTO> GetEstadisticas(int idAdmin, DateTime? desde, DateTime? hasta)
+    {
+        if (desde is null || hasta is null)
+        {
+            throw new ValidationException("Las fechas desde y hasta son requeridas");
+        }
+
+        if (desde.Value.Date > hasta.Value.Date)
+        {
+            throw new ValidationException("La fecha desde no puede ser mayor a la fecha hasta");
+        }
+
+        // Se limita a un año para no recorrer períodos enormes al contar los turnos
+        if ((hasta.Value.Date - desde.Value.Date).TotalDays > 366)
+        {
+            throw new ValidationException("El período no puede ser mayor a un año");
+        }
+
+        int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
+        var reservaList = await _reservaRepository.GetByGimnasioAsync(gimnasioId, desde.Value, hasta.Value);
+        var horarioList = await _horarioRepository.GetActivosByGimnasioAsync(gimnasioId);
+
+        // Los horarios que se desactivaron pero tuvieron reservas en el período también se cuentan
+        foreach (var reserva in reservaList)
+        {
+            if (!horarioList.Any(h => h.Id == reserva.HorarioId))
+            {
+                horarioList.Add(reserva.Horario);
+            }
+        }
+
+        var estadisticas = new EstadisticasGimnasioDTO();
+
+        estadisticas.Desde = desde.Value.Date;
+        estadisticas.Hasta = hasta.Value.Date;
+        estadisticas.TotalReservas = reservaList.Count;
+        estadisticas.Confirmadas = reservaList.Count(r => r.Estado == EstadoReserva.Confirmada);
+        estadisticas.Canceladas = reservaList.Count(r => r.Estado == EstadoReserva.Cancelada);
+        estadisticas.PorcentajeCancelacion = CalcularPorcentaje(estadisticas.Canceladas, estadisticas.TotalReservas);
+
+        var horariosOrdenados = horarioList
+            .OrderBy(h => Array.IndexOf(HorarioService.DiasSemana, h.DiaSemana))
+            .ThenBy(h => h.HoraInicio);
+
+        foreach (var horario in horariosOrdenados)
+        {
+            var reservasDelHorario = reservaList.Where(r => r.HorarioId == horario.Id).ToList();
+
+            var ocupacion = new OcupacionHorarioDTO();
+
+            ocupacion.HorarioId = horario.Id;
+            ocupacion.DiaSemana = horario.DiaSemana;
+            ocupacion.HoraInicio = horario.HoraInicio.ToString("HH:mm");
+            ocupacion.HoraFin = horario.HoraFin.ToString("HH:mm");
+            ocupacion.CupoMaximo = horario.CupoMaximo;
+            ocupacion.CantidadTurnos = ContarDias(desde.Value, hasta.Value, horario.DiaSemana);
+            ocupacion.ReservasConfirmadas = reservasDelHorario.Count(r => r.Estado == EstadoReserva.Confirmada);
+            ocupacion.Cancelaciones = reservasDelHorario.Count(r => r.Estado == EstadoReserva.Cancelada);
+            // Lugares ocupados sobre los lugares que se ofrecieron en todo el período
+            ocupacion.PorcentajeOcupacion = CalcularPorcentaje(ocupacion.ReservasConfirmadas, ocupacion.CupoMaximo * ocupacion.CantidadTurnos);
+
+            estadisticas.OcupacionPorHorario.Add(ocupacion);
+        }
+
+        return estadisticas;
+    }
+
+    // Cuántas veces cae ese día de la semana entre las dos fechas (las dos incluidas)
+    private int ContarDias(DateTime desde, DateTime hasta, string diaSemana)
+    {
+        int cantidad = 0;
+
+        for (var fecha = desde.Date; fecha <= hasta.Date; fecha = fecha.AddDays(1))
+        {
+            if (DiaDeLaSemana(fecha) == diaSemana)
+            {
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    // Porcentaje con un decimal. Si el total es 0 devuelve 0 para no dividir por cero
+    private double CalcularPorcentaje(int parte, int total)
+    {
+        if (total == 0)
+        {
+            return 0;
+        }
+
+        return Math.Round((double)parte * 100 / total, 1);
+    }
+
+    // El gimnasio sale de la cuenta del admin, no de lo que manda el cliente
+    private async Task<int> GetGimnasioDelAdmin(int idAdmin)
+    {
+        var admin = await _usuarioRepository.GetByIdAsync(idAdmin) as AdminGimnasio;
+
+        if (admin is null)
+        {
+            throw new NotFoundException("No se encontró la cuenta del admin");
+        }
+
+        return admin.GimnasioId;
     }
 
     // Devuelve la reserva solo si existe y es del usuario.
