@@ -32,4 +32,16 @@ public class SuscripcionRepository : RepositoryBase<Suscripcion>, ISuscripcionRe
             .Include(s => s.Pagos)
             .FirstOrDefaultAsync(s => s.UsuarioComunId == usuarioComunId);
     }
+
+    // Suscripciones activas que vencen en el rango [desde, hasta).
+    // Trae el usuario porque hace falta su email para avisarle
+    public async Task<List<Suscripcion>> GetActivasQueVencenEntreAsync(DateTime desde, DateTime hasta)
+    {
+        return await _context.Suscripciones
+            .Include(s => s.UsuarioComun)
+            .Where(s => s.Estado == EstadoSuscripcion.Activa
+                && s.FechaVencimiento >= desde
+                && s.FechaVencimiento < hasta)
+            .ToListAsync();
+    }
 }

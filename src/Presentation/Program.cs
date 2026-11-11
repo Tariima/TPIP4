@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
+using Presentation.BackgroundServices;
 using Presentation.Middleware;
 using System.Net.Http.Headers;
 using System.Text;
@@ -74,6 +75,8 @@ builder.Services.AddScoped<IHorarioService, HorarioService>();
 builder.Services.AddScoped<IBeneficioService, BeneficioService>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IProgresoService, ProgresoService>();
+// Provisorio hasta tener el servicio de mails real (#132): los mails se escriben en el log
+builder.Services.AddScoped<IEmailService, EmailLogService>();
 builder.Services.AddScoped<ICustomAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 #endregion
@@ -118,6 +121,9 @@ builder.Services.AddHttpClient<IMercadoPagoService, MercadoPagoService>(client =
     // Cada intento corta a los 10 segundos para no dejar colgado al usuario
     pipeline.AddTimeout(TimeSpan.FromSeconds(10));
 });
+
+// Proceso en segundo plano que vence las suscripciones una vez por día
+builder.Services.AddHostedService<VencimientoSuscripcionesService>();
 
 var app = builder.Build();
 
