@@ -20,7 +20,9 @@ public class GimnasiosController : ControllerBase
         _gimnasioService = gimnasioService;
     }
 
+    // Es público para que el responsable de un gimnasio pueda elegirlo al pedir la cuenta
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<GimnasioDTO>>> GetActivos()
     {
         return await _gimnasioService.GetActivos();
