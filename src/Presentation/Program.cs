@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Models;
 using Application.Services;
 using Domain.Interfaces;
 using Infrastructure.Persistence;
@@ -90,6 +91,9 @@ builder.Services.AddScoped<IHorarioRepository, HorarioRepository>();
 builder.Services.AddScoped<IBeneficioRepository, BeneficioRepository>();
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
 #endregion
+
+// El monto de la suscripción se lee de appsettings y se inyecta en el service como un objeto común
+builder.Services.AddSingleton(builder.Configuration.GetSection("Suscripcion").Get<SuscripcionSettings>()!);
 
 // Cliente HTTP para Mercado Pago con HttpClientFactory. La factory maneja la vida de las conexiones,
 // y el resilience handler (Polly) reintenta si Mercado Pago falla o no responde

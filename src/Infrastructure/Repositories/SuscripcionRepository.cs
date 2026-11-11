@@ -24,4 +24,12 @@ public class SuscripcionRepository : RepositoryBase<Suscripcion>, ISuscripcionRe
                 && s.Estado == EstadoSuscripcion.Activa
                 && s.FechaVencimiento > DateTime.Now);
     }
+
+    // Cada usuario tiene una sola suscripción, que se va renovando con pagos nuevos
+    public async Task<Suscripcion?> GetByUsuarioAsync(int usuarioComunId)
+    {
+        return await _context.Suscripciones
+            .Include(s => s.Pagos)
+            .FirstOrDefaultAsync(s => s.UsuarioComunId == usuarioComunId);
+    }
 }
