@@ -349,6 +349,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("IdExterno")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MedioPago")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
