@@ -8,4 +8,5 @@ public interface IReservaRepository : IRepositoryBase<Reserva>
     Task<bool> TieneReservaConfirmadaAsync(int usuarioComunId, DateTime fecha);
     Task<List<Reserva>> GetByUsuarioAsync(int usuarioComunId);
     Task<Reserva?> GetByIdConHorarioAsync(int id);
+    Task<List<Reserva>> GetByGimnasioAsync(int gimnasioId, DateTime desde, DateTime hasta);
 }

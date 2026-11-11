@@ -58,6 +58,22 @@ public class ReservasController : ControllerBase
         return NoContent();
     }
 
+    // Ej: api/reservas/gimnasio?fecha=2026-11-12&horarioId=3 (el horario es opcional)
+    [HttpGet("gimnasio")]
+    [Authorize(Roles = "AdminGimnasio")]
+    public async Task<ActionResult<List<ReservaGimnasioDTO>>> GetReservasDelGimnasio([FromQuery] DateTime? fecha, [FromQuery] int? horarioId)
+    {
+        return await _reservaService.GetReservasDelGimnasio(GetIdUsuario(), fecha, horarioId);
+    }
+
+    // Ej: api/reservas/estadisticas?desde=2026-11-01&hasta=2026-11-30
+    [HttpGet("estadisticas")]
+    [Authorize(Roles = "AdminGimnasio")]
+    public async Task<ActionResult<EstadisticasGimnasioDTO>> GetEstadisticas([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
+    {
+        return await _reservaService.GetEstadisticas(GetIdUsuario(), desde, hasta);
+    }
+
     private int GetIdUsuario()
     {
         return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
