@@ -43,6 +43,11 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
             throw new ConflictException("Ya existe un usuario con ese email");
         }
 
+        if (creationSolicitudDto.Contrasena.Length < 8 || creationSolicitudDto.Contrasena.Length > 20)
+        {
+            throw new ValidationException("La contraseña tiene que tener entre 8 y 20 caracteres");
+        }
+
         // La cuenta se crea ya pero inactiva, no puede loguearse hasta que la aprueben.
         // La contraseña queda en la cuenta porque la solicitud no la guarda
         var nuevoAdmin = new AdminGimnasio();
