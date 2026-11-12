@@ -28,7 +28,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "TPIP4 API",
+        Title = "Kineo API",
         Version = "v1",
         Description = "API para registrar entrenamientos y reservar turnos en gimnasios. " +
             "Para los endpoints con candado primero hay que hacer login en api/authentication/authenticate y pegar el token en Authorize."
