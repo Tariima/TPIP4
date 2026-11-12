@@ -44,7 +44,7 @@ public class BeneficioService : IBeneficioService
         int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
 
         // No tiene sentido cargar un beneficio que ya terminó
-        if (creationBeneficioDto.VigenteHasta.Date < DateTime.Today)
+        if (creationBeneficioDto.VigenteHasta!.Value.Date < DateTime.Today)
         {
             throw new ValidationException("La fecha de fin de vigencia no puede ser anterior a hoy");
         }
@@ -109,13 +109,19 @@ public class BeneficioService : IBeneficioService
     // Lo usan Create y Update, así las reglas están en un solo lugar
     private void CargarDatos(Beneficio beneficio, CreationBeneficioDTO creationBeneficioDto)
     {
+        // Los campos son nullables en el DTO, pero si llegamos acá ya vienen: [Required] lo valida antes.
+        // Por eso se puede usar .Value sin riesgo
+        float porcentajeDescuento = creationBeneficioDto.PorcentajeDescuento!.Value;
+        DateTime vigenteDesde = creationBeneficioDto.VigenteDesde!.Value.Date;
+        DateTime vigenteHasta = creationBeneficioDto.VigenteHasta!.Value.Date;
+
         // Puede ser 0 para beneficios que no son un descuento, ej: "primera clase gratis"
-        if (creationBeneficioDto.PorcentajeDescuento < 0 || creationBeneficioDto.PorcentajeDescuento > 100)
+        if (porcentajeDescuento < 0 || porcentajeDescuento > 100)
         {
             throw new ValidationException("El porcentaje de descuento tiene que estar entre 0 y 100");
         }
 
-        if (creationBeneficioDto.VigenteDesde.Date > creationBeneficioDto.VigenteHasta.Date)
+        if (vigenteDesde > vigenteHasta)
         {
             throw new ValidationException("La fecha de inicio de vigencia no puede ser posterior a la de fin");
         }
@@ -123,9 +129,9 @@ public class BeneficioService : IBeneficioService
         beneficio.Titulo = creationBeneficioDto.Titulo;
         beneficio.Descripcion = creationBeneficioDto.Descripcion;
         beneficio.Tipo = creationBeneficioDto.Tipo;
-        beneficio.PorcentajeDescuento = creationBeneficioDto.PorcentajeDescuento;
-        beneficio.VigenteDesde = creationBeneficioDto.VigenteDesde.Date;
-        beneficio.VigenteHasta = creationBeneficioDto.VigenteHasta.Date;
+        beneficio.PorcentajeDescuento = porcentajeDescuento;
+        beneficio.VigenteDesde = vigenteDesde;
+        beneficio.VigenteHasta = vigenteHasta;
     }
 
     // Cada admin maneja solo los beneficios de su gimnasio. El gimnasio sale de su cuenta, no de lo que manda el cliente.
