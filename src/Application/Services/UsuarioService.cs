@@ -28,10 +28,15 @@ public class UsuarioService : IUsuarioService
             throw new ConflictException("Ya existe un usuario con ese email");
         }
 
-        if (creationUsuarioDto.Peso <= 0 || creationUsuarioDto.Altura <= 0)
+        if (creationUsuarioDto.Contrasena.Length < 8 || creationUsuarioDto.Contrasena.Length > 20)
         {
-            throw new ValidationException("El peso y la altura deben ser mayores a cero");
+            throw new ValidationException("La contraseña tiene que tener entre 8 y 20 caracteres");
         }
+
+        // .Value es seguro, el [Required] ya validó
+        DateTime fechaNacimiento = creationUsuarioDto.FechaNacimiento!.Value;
+
+        ValidarDatosUsuario(fechaNacimiento, creationUsuarioDto.Peso, creationUsuarioDto.Altura);
 
         var nuevoUsuario = new UsuarioComun();
 
@@ -39,7 +44,7 @@ public class UsuarioService : IUsuarioService
         nuevoUsuario.Apellido = creationUsuarioDto.Apellido;
         nuevoUsuario.Email = creationUsuarioDto.Email;
         nuevoUsuario.Contrasena = _passwordHasher.Hash(creationUsuarioDto.Contrasena);
-        nuevoUsuario.FechaNacimiento = creationUsuarioDto.FechaNacimiento;
+        nuevoUsuario.FechaNacimiento = fechaNacimiento;
         nuevoUsuario.Peso = creationUsuarioDto.Peso;
         nuevoUsuario.Altura = creationUsuarioDto.Altura;
         nuevoUsuario.FechaRegistro = DateTime.Now;
@@ -71,14 +76,14 @@ public class UsuarioService : IUsuarioService
             throw new NotFoundException($"No se encontró el usuario con id {id}");
         }
 
-        if (updateUsuarioDto.Peso <= 0 || updateUsuarioDto.Altura <= 0)
-        {
-            throw new ValidationException("El peso y la altura deben ser mayores a cero");
-        }
+        // .Value es seguro, el [Required] ya validó
+        DateTime fechaNacimiento = updateUsuarioDto.FechaNacimiento!.Value;
+
+        ValidarDatosUsuario(fechaNacimiento, updateUsuarioDto.Peso, updateUsuarioDto.Altura);
 
         usuario.Nombre = updateUsuarioDto.Nombre;
         usuario.Apellido = updateUsuarioDto.Apellido;
-        usuario.FechaNacimiento = updateUsuarioDto.FechaNacimiento;
+        usuario.FechaNacimiento = fechaNacimiento;
         usuario.Peso = updateUsuarioDto.Peso;
         usuario.Altura = updateUsuarioDto.Altura;
 
@@ -100,8 +105,46 @@ public class UsuarioService : IUsuarioService
             throw new ValidationException("La contraseña actual es incorrecta");
         }
 
+        if (updateContrasenaDto.ContrasenaNueva.Length < 8 || updateContrasenaDto.ContrasenaNueva.Length > 20)
+        {
+            throw new ValidationException("La contraseña nueva tiene que tener entre 8 y 20 caracteres");
+        }
+
         usuario.Contrasena = _passwordHasher.Hash(updateContrasenaDto.ContrasenaNueva);
 
         await _usuarioRepository.UpdateAsync(usuario);
+    }
+
+    // Lo usan Create y Update, así las reglas están en un solo lugar
+    private void ValidarDatosUsuario(DateTime fechaNacimiento, float peso, float altura)
+    {
+        if (fechaNacimiento.Date > DateTime.Today)
+        {
+            throw new ValidationException("La fecha de nacimiento no puede ser futura");
+        }
+
+        // Edad en años cumplidos: si este año todavía no cumplió, se resta uno
+        int edad = DateTime.Today.Year - fechaNacimiento.Year;
+
+        if (fechaNacimiento.Date > DateTime.Today.AddYears(-edad))
+        {
+            edad--;
+        }
+
+        if (edad < 14 || edad > 100)
+        {
+            throw new ValidationException("La edad tiene que estar entre 14 y 100 años");
+        }
+
+        if (peso < 20 || peso > 300)
+        {
+            throw new ValidationException("El peso tiene que estar entre 20 y 300 kg");
+        }
+
+        // La altura va en metros (ej: 1.78)
+        if (altura < 0.5 || altura > 2.5)
+        {
+            throw new ValidationException("La altura tiene que estar entre 0,5 y 2,5 metros");
+        }
     }
 }
