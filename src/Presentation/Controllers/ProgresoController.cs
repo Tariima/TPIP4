@@ -19,12 +19,18 @@ public class ProgresoController : ControllerBase
         _progresoService = progresoService;
     }
 
+    /// <summary>
+    /// Peso máximo y volumen por día de un ejercicio, para la gráfica. Solo Pro
+    /// </summary>
     [HttpGet("ejercicios/{idEjercicio}")]
     public async Task<ActionResult<List<ProgresoEjercicioDTO>>> GetProgresoEjercicio([FromRoute] int idEjercicio, [FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
     {
         return await _progresoService.GetProgresoEjercicio(GetIdUsuario(), idEjercicio, desde, hasta);
     }
 
+    /// <summary>
+    /// Resumen por semana: entrenamientos, minutos y volumen. Solo Pro
+    /// </summary>
     [HttpGet("semanal")]
     public async Task<ActionResult<List<ResumenSemanalDTO>>> GetResumenSemanal([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
     {

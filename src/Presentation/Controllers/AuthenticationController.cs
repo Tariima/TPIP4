@@ -15,6 +15,9 @@ public class AuthenticationController : ControllerBase
         _authenticationService = authenticationService;
     }
 
+    /// <summary>
+    /// Login. Devuelve el token JWT (dura 1 hora) que se pega en el botón Authorize
+    /// </summary>
     [HttpPost("authenticate")]
     public async Task<ActionResult<string>> Autenticar([FromBody] CredentialsDTO credentials)
     {

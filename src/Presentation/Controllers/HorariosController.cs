@@ -20,6 +20,9 @@ public class HorariosController : ControllerBase
         _horarioService = horarioService;
     }
 
+    /// <summary>
+    /// Horarios del gimnasio del admin
+    /// </summary>
     [HttpGet]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult<List<HorarioDTO>>> GetAll()
@@ -27,6 +30,9 @@ public class HorariosController : ControllerBase
         return await _horarioService.GetAll(GetIdUsuario());
     }
 
+    /// <summary>
+    /// Un horario del gimnasio del admin
+    /// </summary>
     [HttpGet("{id}")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult<HorarioDTO>> GetById([FromRoute] int id)
@@ -34,6 +40,9 @@ public class HorariosController : ControllerBase
         return await _horarioService.GetById(GetIdUsuario(), id);
     }
 
+    /// <summary>
+    /// Crea un horario. Las horas van como texto HH:mm (ej: 08:30)
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult<HorarioDTO>> Create([FromBody] CreationHorarioDTO creationHorarioDto)
@@ -42,6 +51,9 @@ public class HorariosController : ControllerBase
         return Created($"api/horarios/{horarioCreado.Id}", horarioCreado);
     }
 
+    /// <summary>
+    /// Modifica un horario
+    /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult> Update([FromRoute] int id, [FromBody] CreationHorarioDTO creationHorarioDto)
@@ -50,6 +62,9 @@ public class HorariosController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Desactiva un horario
+    /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult> Delete([FromRoute] int id)

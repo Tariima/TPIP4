@@ -19,6 +19,9 @@ public class EntrenamientosController : ControllerBase
         _entrenamientoService = entrenamientoService;
     }
 
+    /// <summary>
+    /// Historial de entrenamientos del usuario, con filtro opcional por fechas
+    /// </summary>
     // Historial: las fechas van en la URL y son opcionales, ej: api/entrenamientos?desde=2026-11-01&hasta=2026-11-30
     [HttpGet]
     public async Task<ActionResult<List<EntrenamientoDTO>>> GetAll([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
@@ -26,12 +29,18 @@ public class EntrenamientosController : ControllerBase
         return await _entrenamientoService.GetAll(GetIdUsuario(), desde, hasta);
     }
 
+    /// <summary>
+    /// Un entrenamiento con sus series
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<EntrenamientoDTO>> GetById([FromRoute] int id)
     {
         return await _entrenamientoService.GetById(GetIdUsuario(), id);
     }
 
+    /// <summary>
+    /// Registra un entrenamiento con las series que se hicieron
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<EntrenamientoDTO>> Create([FromBody] CreationEntrenamientoDTO creationEntrenamientoDto)
     {
@@ -39,6 +48,9 @@ public class EntrenamientosController : ControllerBase
         return Created($"api/entrenamientos/{entrenamientoCreado.Id}", entrenamientoCreado);
     }
 
+    /// <summary>
+    /// Modifica un entrenamiento. La lista de series reemplaza a la anterior
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<ActionResult> Update([FromRoute] int id, [FromBody] UpdateEntrenamientoDTO updateEntrenamientoDto)
     {
@@ -46,6 +58,9 @@ public class EntrenamientosController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Borra un entrenamiento
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {

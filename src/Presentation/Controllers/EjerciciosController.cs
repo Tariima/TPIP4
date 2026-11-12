@@ -17,12 +17,18 @@ public class EjerciciosController : ControllerBase
         _ejercicioService = ejercicioService;
     }
 
+    /// <summary>
+    /// Lista los ejercicios. Se puede filtrar por grupo muscular (ej: Pecho, Espalda, Piernas)
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<EjercicioDTO>>> GetAll([FromQuery] string? grupoMuscular)
     {
         return await _ejercicioService.GetAll(grupoMuscular);
     }
 
+    /// <summary>
+    /// Un ejercicio por id
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<EjercicioDTO>> GetById([FromRoute] int id)
     {

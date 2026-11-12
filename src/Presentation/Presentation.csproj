@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>0dfb42bb-bb81-4d64-9737-9cbcbb9f6794</UserSecretsId>
+    <!-- Genera el XML con los comentarios /// de los controllers para que Swagger los muestre -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Sin esto tira un warning por cada clase o método público que no tenga comentario /// -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

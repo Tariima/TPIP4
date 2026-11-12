@@ -19,18 +19,27 @@ public class RutinasController : ControllerBase
         _rutinaService = rutinaService;
     }
 
+    /// <summary>
+    /// Rutinas activas del usuario
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<RutinaDTO>>> GetAll()
     {
         return await _rutinaService.GetAll(GetIdUsuario());
     }
 
+    /// <summary>
+    /// Una rutina con sus ejercicios
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<RutinaDTO>> GetById([FromRoute] int id)
     {
         return await _rutinaService.GetById(GetIdUsuario(), id);
     }
 
+    /// <summary>
+    /// Crea una rutina. Tiene que tener al menos un ejercicio
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<RutinaDTO>> Create([FromBody] CreationRutinaDTO creationRutinaDto)
     {
@@ -38,6 +47,9 @@ public class RutinasController : ControllerBase
         return Created($"api/rutinas/{rutinaCreada.Id}", rutinaCreada);
     }
 
+    /// <summary>
+    /// Modifica una rutina. La lista de ejercicios reemplaza a la anterior
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<ActionResult> Update([FromRoute] int id, [FromBody] UpdateRutinaDTO updateRutinaDto)
     {
@@ -45,6 +57,9 @@ public class RutinasController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Baja lógica de una rutina
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {

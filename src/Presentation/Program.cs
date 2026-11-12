@@ -26,6 +26,19 @@ builder.Services.AddEndpointsApiExplorer();
 // Swagger con el botón Authorize para poder probar con el token
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "TPIP4 API",
+        Version = "v1",
+        Description = "API para registrar entrenamientos y reservar turnos en gimnasios. " +
+            "Para los endpoints con candado primero hay que hacer login en api/authentication/authenticate y pegar el token en Authorize."
+    });
+
+    // Los comentarios /// de los controllers se guardan en Presentation.xml al compilar
+    // (GenerateDocumentationFile en el .csproj) y Swagger los muestra como descripción de cada endpoint
+    string xmlPath = Path.Combine(AppContext.BaseDirectory, "Presentation.xml");
+    options.IncludeXmlComments(xmlPath);
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.Http,
