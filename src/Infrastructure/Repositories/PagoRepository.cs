@@ -18,6 +18,7 @@ public class PagoRepository : RepositoryBase<Pago>, IPagoRepository
     {
         return await _context.Pagos
             .Include(p => p.Suscripcion)
+                .ThenInclude(s => s.UsuarioComun)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 }

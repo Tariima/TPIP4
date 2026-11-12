@@ -10,11 +10,13 @@ public class PagoService : IPagoService
 {
     private readonly IPagoRepository _pagoRepository;
     private readonly IMercadoPagoService _mercadoPagoService;
+    private readonly IEmailService _emailService;
 
-    public PagoService(IPagoRepository pagoRepository, IMercadoPagoService mercadoPagoService)
+    public PagoService(IPagoRepository pagoRepository, IMercadoPagoService mercadoPagoService, IEmailService emailService)
     {
         _pagoRepository = pagoRepository;
         _mercadoPagoService = mercadoPagoService;
+        _emailService = emailService;
     }
 
     // Mercado Pago avisa que una orden cambió. No confiamos en el aviso: con el id
@@ -65,6 +67,12 @@ public class PagoService : IPagoService
             ActivarSuscripcion(pago.Suscripcion);
 
             await _pagoRepository.UpdateAsync(pago);
+
+            var usuario = pago.Suscripcion.UsuarioComun;
+            await _emailService.EnviarAsync(
+                usuario.Email,
+                "Recibimos tu pago de la suscripción Pro",
+                $"Hola {usuario.Nombre}, recibimos tu pago de ${pago.Monto}. Tu suscripción Pro está activa hasta el {pago.Suscripcion.FechaVencimiento:dd/MM/yyyy}.");
         }
         else if (orden.Estado == "failed" || orden.Estado == "canceled")
         {
