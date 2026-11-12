@@ -2,7 +2,7 @@ using Domain.Entities;
 
 namespace Application.Models;
 
-// Horario que se puede reservar en una fecha, con los lugares que le quedan
+// Horario reservable en una fecha, con los lugares libres
 public class HorarioDisponibleDTO
 {
     public int HorarioId { get; set; }

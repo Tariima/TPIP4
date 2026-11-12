@@ -8,7 +8,7 @@ public class PagoDTO
     public DateTime Fecha { get; set; }
     public decimal Monto { get; set; }
     public string MedioPago { get; set; } = string.Empty;
-    // Se devuelve como texto (Pendiente, Aprobado, Rechazado) y no como número
+    // como texto, no como el número del enum
     public string Estado { get; set; } = string.Empty;
 
     public static PagoDTO Create(Pago pago)

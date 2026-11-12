@@ -17,13 +17,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger con el botón Authorize para poder probar con el token
+// Swagger con el botón Authorize para probar con token
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -34,8 +31,7 @@ builder.Services.AddSwaggerGen(options =>
             "Para los endpoints con candado primero hay que hacer login en api/authentication/authenticate y pegar el token en Authorize."
     });
 
-    // Los comentarios /// de los controllers se guardan en Presentation.xml al compilar
-    // (GenerateDocumentationFile en el .csproj) y Swagger los muestra como descripción de cada endpoint
+    // Los /// de los controllers van a Presentation.xml (GenerateDocumentationFile) y Swagger los muestra
     string xmlPath = Path.Combine(AppContext.BaseDirectory, "Presentation.xml");
     options.IncludeXmlComments(xmlPath);
 
@@ -52,7 +48,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Configuración de la autenticación con JWT: qué valores del token se validan y contra qué
+// JWT: qué se valida del token
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
@@ -68,13 +64,12 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-// Agregar el ApplicationDbContext al contenedor de servicios
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
-// EnableRetryOnFailure reintenta la conexión si la base de Azure está pausada y tarda en despertar
+// reintenta si la base de Azure está pausada y tarda en arrancar
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
-// Configurar servicios y repositorios como Scoped
+// Services y repositorios (scoped)
 #region Services
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IEjercicioService, EjercicioService>();
@@ -88,7 +83,7 @@ builder.Services.AddScoped<IHorarioService, HorarioService>();
 builder.Services.AddScoped<IBeneficioService, BeneficioService>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IProgresoService, ProgresoService>();
-// Mails por SMTP con Gmail (MailKit). La contraseña no está en appsettings: va en user-secrets o en variables de entorno de Azure
+// Mails por SMTP (MailKit + Gmail). La contraseña va en user-secrets o en las variables de entorno de Azure
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICustomAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -108,22 +103,20 @@ builder.Services.AddScoped<IBeneficioRepository, BeneficioRepository>();
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
 #endregion
 
-// El monto de la suscripción se lee de appsettings y se inyecta en el service como un objeto común
+// monto de la suscripción, sale del appsettings
 builder.Services.AddSingleton(builder.Configuration.GetSection("Suscripcion").Get<SuscripcionSettings>()!);
 
-// Cliente HTTP para Mercado Pago con HttpClientFactory. La factory maneja la vida de las conexiones,
-// y el resilience handler (Polly) reintenta si Mercado Pago falla o no responde
+// HttpClient de MP con HttpClientFactory, y Polly para los reintentos
 builder.Services.AddHttpClient<IMercadoPagoService, MercadoPagoService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["MercadoPago:BaseUrl"]!);
-    // El token no está en appsettings: se carga con user-secrets (local) o variables de entorno (Azure)
+    // el token va en user-secrets (local) o en variables de entorno (Azure), nunca en appsettings
     client.DefaultRequestHeaders.Authorization =
         new AuthenticationHeaderValue("Bearer", builder.Configuration["MercadoPago:AccessToken"]);
 })
 .AddResilienceHandler("mercadopago", pipeline =>
 {
-    // Hasta 3 reintentos ante errores temporales (5xx, 408, 429 o sin conexión),
-    // esperando cada vez más entre uno y otro (1s, 2s, 4s)
+    // hasta 3 reintentos con espera exponencial (aprox. 1s, 2s, 4s) ante 5xx, 408, 429 o error de red
     pipeline.AddRetry(new HttpRetryStrategyOptions
     {
         MaxRetryAttempts = 3,
@@ -131,16 +124,16 @@ builder.Services.AddHttpClient<IMercadoPagoService, MercadoPagoService>(client =
         BackoffType = DelayBackoffType.Exponential
     });
 
-    // Cada intento corta a los 10 segundos para no dejar colgado al usuario
+    // timeout de 10 seg por intento
     pipeline.AddTimeout(TimeSpan.FromSeconds(10));
 });
 
-// Proceso en segundo plano que vence las suscripciones una vez por día
+// job diario de vencimientos
 builder.Services.AddHostedService<VencimientoSuscripcionesService>();
 
 var app = builder.Build();
 
-// Aplica las migraciones pendientes al arrancar, así en Azure se crean las tablas en cada deploy
+// aplica las migraciones pendientes al arrancar, así Azure queda al día en cada deploy
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -149,11 +142,11 @@ using (var scope = app.Services.CreateScope())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Swagger habilitado también en producción, para poder probar la API desplegada en Azure
+// Swagger también en producción, para probar en Azure
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// La raíz redirige a Swagger
+// / redirige a Swagger
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 app.UseHttpsRedirection();

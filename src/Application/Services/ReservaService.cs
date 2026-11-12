@@ -26,7 +26,7 @@ public class ReservaService : IReservaService
         _emailService = emailService;
     }
 
-    // Horarios del gimnasio para el día de la semana de esa fecha que todavía tienen lugar
+    // Horarios de ese día de la semana que todavía tienen lugar
     public async Task<List<HorarioDisponibleDTO>> GetHorariosDisponibles(int gimnasioId, DateTime fecha)
     {
         var gimnasio = await _gimnasioRepository.GetByIdAsync(gimnasioId);
@@ -48,7 +48,7 @@ public class ReservaService : IReservaService
 
         foreach (var horario in horarioList.Where(h => h.DiaSemana == dia).OrderBy(h => h.HoraInicio))
         {
-            // Si la fecha es hoy, los turnos que ya empezaron no se pueden reservar
+            // si es hoy, los que ya empezaron no
             if (ArmarFechaTurno(fecha, horario) <= DateTime.Now)
             {
                 continue;
@@ -57,7 +57,7 @@ public class ReservaService : IReservaService
             int ocupados = await _reservaRepository.CountConfirmadasAsync(horario.Id, fecha);
             int cupoDisponible = horario.CupoMaximo - ocupados;
 
-            // Los horarios que no tienen cupo no aparecen
+            // sin cupo no se muestran
             if (cupoDisponible > 0)
             {
                 disponibles.Add(HorarioDisponibleDTO.Create(horario, cupoDisponible));
@@ -118,7 +118,7 @@ public class ReservaService : IReservaService
 
         nuevaReserva.FechaTurno = fechaTurno;
         nuevaReserva.FechaSolicitud = DateTime.Now;
-        // La reserva queda confirmada directamente, no hace falta que nadie la apruebe
+        // queda confirmada directo, no hay aprobación
         nuevaReserva.Estado = EstadoReserva.Confirmada;
         nuevaReserva.UsuarioComunId = idUsuario;
         nuevaReserva.HorarioId = horario.Id;
@@ -139,7 +139,7 @@ public class ReservaService : IReservaService
         return ReservaDTO.Create(reservaCreada);
     }
 
-    // La reserva no se borra: queda como cancelada y el lugar vuelve a estar disponible
+    // no se borra: pasa a Cancelada y libera el lugar
     public async Task Cancelar(int idUsuario, int idReserva)
     {
         var reserva = await GetReservaDelUsuario(idUsuario, idReserva);
@@ -170,7 +170,7 @@ public class ReservaService : IReservaService
         }
     }
 
-    // Reservas del gimnasio del admin en una fecha. El horario es opcional: si viene, se filtra por ese horario
+    // Reservas del gimnasio en una fecha, horarioId es opcional
     public async Task<List<ReservaGimnasioDTO>> GetReservasDelGimnasio(int idAdmin, DateTime? fecha, int? horarioId)
     {
         if (fecha is null)
@@ -201,7 +201,7 @@ public class ReservaService : IReservaService
             throw new ValidationException("La fecha desde no puede ser mayor a la fecha hasta");
         }
 
-        // Se limita a un año para no recorrer períodos enormes al contar los turnos
+        // máximo un año, para no recorrer rangos enormes
         if ((hasta.Value.Date - desde.Value.Date).TotalDays > 366)
         {
             throw new ValidationException("El período no puede ser mayor a un año");
@@ -211,7 +211,7 @@ public class ReservaService : IReservaService
         var reservaList = await _reservaRepository.GetByGimnasioAsync(gimnasioId, desde.Value, hasta.Value);
         var horarioList = await _horarioRepository.GetActivosByGimnasioAsync(gimnasioId);
 
-        // Los horarios que se desactivaron pero tuvieron reservas en el período también se cuentan
+        // se suman los horarios dados de baja que tuvieron reservas en el período
         foreach (var reserva in reservaList)
         {
             if (!horarioList.Any(h => h.Id == reserva.HorarioId))
@@ -247,7 +247,7 @@ public class ReservaService : IReservaService
             ocupacion.CantidadTurnos = ContarDias(desde.Value, hasta.Value, horario.DiaSemana);
             ocupacion.ReservasConfirmadas = reservasDelHorario.Count(r => r.Estado == EstadoReserva.Confirmada);
             ocupacion.Cancelaciones = reservasDelHorario.Count(r => r.Estado == EstadoReserva.Cancelada);
-            // Lugares ocupados sobre los lugares que se ofrecieron en todo el período
+            // ocupados / ofrecidos en el período
             ocupacion.PorcentajeOcupacion = CalcularPorcentaje(ocupacion.ReservasConfirmadas, ocupacion.CupoMaximo * ocupacion.CantidadTurnos);
 
             estadisticas.OcupacionPorHorario.Add(ocupacion);
@@ -256,7 +256,7 @@ public class ReservaService : IReservaService
         return estadisticas;
     }
 
-    // Cuántas veces cae ese día de la semana entre las dos fechas (las dos incluidas)
+    // cuántas veces cae ese día entre las dos fechas (inclusive)
     private int ContarDias(DateTime desde, DateTime hasta, string diaSemana)
     {
         int cantidad = 0;
@@ -272,7 +272,7 @@ public class ReservaService : IReservaService
         return cantidad;
     }
 
-    // Porcentaje con un decimal. Si el total es 0 devuelve 0 para no dividir por cero
+    // con un decimal, 0 si el total es 0
     private double CalcularPorcentaje(int parte, int total)
     {
         if (total == 0)
@@ -283,7 +283,7 @@ public class ReservaService : IReservaService
         return Math.Round((double)parte * 100 / total, 1);
     }
 
-    // El gimnasio sale de la cuenta del admin, no de lo que manda el cliente
+    // sale de la cuenta del admin, no del request
     private async Task<int> GetGimnasioDelAdmin(int idAdmin)
     {
         var admin = await _usuarioRepository.GetByIdAsync(idAdmin) as AdminGimnasio;
@@ -296,8 +296,7 @@ public class ReservaService : IReservaService
         return admin.GimnasioId;
     }
 
-    // Devuelve la reserva solo si existe y es del usuario.
-    // Si es de otro usuario también da 404, así no se sabe que existe
+    // 404 si no existe o es de otro usuario
     private async Task<Reserva> GetReservaDelUsuario(int idUsuario, int idReserva)
     {
         var reserva = await _reservaRepository.GetByIdConHorarioAsync(idReserva);
@@ -310,15 +309,14 @@ public class ReservaService : IReservaService
         return reserva;
     }
 
-    // Nombre del día de la semana de una fecha, escrito igual que en los horarios.
-    // DayOfWeek arranca en domingo (0), por eso se corre para que el lunes quede en 0 y el domingo en 6
+    // Nombre del día como se guarda en los horarios. DayOfWeek arranca en domingo, de ahí el +6 % 7
     private string DiaDeLaSemana(DateTime fecha)
     {
         int indice = ((int)fecha.DayOfWeek + 6) % 7;
         return HorarioService.DiasSemana[indice];
     }
 
-    // Fecha y hora en que empieza el turno: el día elegido con la hora de inicio del horario
+    // fecha elegida + hora de inicio del horario
     private DateTime ArmarFechaTurno(DateTime fecha, Horario horario)
     {
         return fecha.Date.Add(horario.HoraInicio.TimeOfDay);

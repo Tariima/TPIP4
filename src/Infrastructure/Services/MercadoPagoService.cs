@@ -7,14 +7,13 @@ using System.Text.Json;
 
 namespace Infrastructure.Services;
 
-// Llama a la API de Orders de Mercado Pago (Checkout Pro).
-// El HttpClient lo da la HttpClientFactory ya configurado en Program.cs (url base, token y reintentos con Polly)
+// Cliente de la API de Orders de MP (Checkout Pro).
+// El HttpClient viene configurado desde Program.cs (url, token y Polly)
 public class MercadoPagoService : IMercadoPagoService
 {
     private readonly HttpClient _httpClient;
 
-    // Mercado Pago usa nombres con guion bajo (total_amount), nosotros PascalCase (TotalAmount).
-    // Con esta opción se convierten solos en los dos sentidos
+    // MP usa snake_case (total_amount) y nosotros PascalCase, con esto se convierte solo
     private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
@@ -27,13 +26,13 @@ public class MercadoPagoService : IMercadoPagoService
 
     public async Task<OrdenMercadoPagoDTO> CrearOrdenAsync(int idPago, decimal monto, string descripcion)
     {
-        // Mercado Pago pide los montos como texto con punto decimal, ej: "5000.00"
+        // MP pide el monto como string, ej: "5000.00"
         string montoTexto = monto.ToString("F2", CultureInfo.InvariantCulture);
 
         var body = new
         {
             Type = "online",
-            // En Checkout Pro va "manual": el pago lo hace el usuario en el link, no lo procesamos nosotros
+            // manual: el pago lo hace el usuario en el checkout de MP
             ProcessingMode = "manual",
             TotalAmount = montoTexto,
             ExternalReference = idPago.ToString(),
@@ -45,8 +44,7 @@ public class MercadoPagoService : IMercadoPagoService
 
         var request = new HttpRequestMessage(HttpMethod.Post, "v1/orders");
         request.Content = JsonContent.Create(body, options: _jsonOptions);
-        // Si Polly reintenta, se manda el mismo request con la misma clave,
-        // y Mercado Pago no crea una orden nueva sino que devuelve la que ya creó
+        // misma clave en los reintentos de Polly, así MP devuelve la orden que ya creó en vez de duplicarla
         request.Headers.Add("X-Idempotency-Key", Guid.NewGuid().ToString());
 
         var response = await _httpClient.SendAsync(request);
@@ -56,8 +54,7 @@ public class MercadoPagoService : IMercadoPagoService
         return ConvertirOrden(orden!);
     }
 
-    // Devuelve null si la orden no existe (Mercado Pago responde 404, o 400 si el id tiene un formato inválido).
-    // Cualquier otro error se deja seguir
+    // null si la orden no existe (MP da 404, o 400 si el id es inválido). Otros errores siguen de largo
     public async Task<OrdenMercadoPagoDTO?> GetOrdenAsync(string idOrden)
     {
         var response = await _httpClient.GetAsync($"v1/orders/{idOrden}");
@@ -81,14 +78,13 @@ public class MercadoPagoService : IMercadoPagoService
         dto.Estado = orden.Status ?? string.Empty;
         dto.DetalleEstado = orden.StatusDetail ?? string.Empty;
         dto.ReferenciaExterna = orden.ExternalReference ?? string.Empty;
-        // El medio de pago está dentro del primer pago de la orden, si ya se pagó
+        // el medio de pago viene en el primer pago de la orden (si ya se pagó)
         dto.MedioPago = orden.Transactions?.Payments?.FirstOrDefault()?.PaymentMethod?.Id ?? string.Empty;
 
         return dto;
     }
 
-    // Clases con la forma del JSON que devuelve Mercado Pago. Son privadas porque
-    // solo se usan acá: el resto del proyecto trabaja con OrdenMercadoPagoDTO
+    // Para deserializar el JSON de MP. Privadas porque afuera se usa OrdenMercadoPagoDTO
     private class OrdenRespuesta
     {
         public string Id { get; set; } = string.Empty;

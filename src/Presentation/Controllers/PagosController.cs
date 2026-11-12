@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
 
-// Sin [Authorize]: a este controller lo llama Mercado Pago, no un usuario logueado
+// Sin [Authorize], lo llama Mercado Pago
 [ApiController]
 [Route("api/[controller]")]
 public class PagosController : ControllerBase
@@ -19,8 +19,7 @@ public class PagosController : ControllerBase
     /// <summary>
     /// Webhook de Mercado Pago. Lo llama Mercado Pago cuando cambia una orden, no se usa desde el front
     /// </summary>
-    // Webhook: Mercado Pago llama acá cuando cambia el estado de una orden.
-    // Hay que responder 200 rápido; si responde error, Mercado Pago vuelve a mandar el aviso más tarde
+    // hay que responder 200 rápido, si devolvemos error MP reintenta el aviso
     [HttpPost("webhook")]
     public async Task<ActionResult> Webhook([FromBody] NotificacionMercadoPagoDTO notificacion)
     {

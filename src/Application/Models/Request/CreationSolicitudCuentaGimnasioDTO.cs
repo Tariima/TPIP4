@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.Request;
 
-// Datos que carga el responsable del gimnasio al pedir la cuenta
+// Datos del formulario de solicitud de cuenta
 public class CreationSolicitudCuentaGimnasioDTO
 {
     [Required(ErrorMessage = "El gimnasio es requerido.")]

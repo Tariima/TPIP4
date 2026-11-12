@@ -22,8 +22,7 @@ public class EntrenamientoRepository : RepositoryBase<Entrenamiento>, IEntrenami
                 .ThenInclude(rs => rs.Ejercicio)
             .Where(e => e.UsuarioComunId == usuarioComunId);
 
-        // Los filtros se agregan solo si vienen. Se compara solo el día para que
-        // "hasta" incluya los entrenamientos de ese día a cualquier hora
+        // Filtros opcionales. Con .Date "hasta" incluye todo ese día
         if (desde is not null)
         {
             query = query.Where(e => e.Fecha.Date >= desde.Value.Date);

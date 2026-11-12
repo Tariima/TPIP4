@@ -49,14 +49,14 @@ public class RutinaService : IRutinaService
         rutina.Nombre = updateRutinaDto.Nombre;
         rutina.Descripcion = updateRutinaDto.Descripcion;
 
-        // Los ejercicios anteriores se sacan de la lista y EF los borra de la tabla
+        // EF borra los que salen de la lista
         rutina.EjerciciosRutina.Clear();
         rutina.EjerciciosRutina.AddRange(ejerciciosRutina);
 
         await _rutinaRepository.UpdateAsync(rutina);
     }
 
-    // Baja lógica: la rutina queda en la base para no perder los entrenamientos que la usan
+    // baja lógica, para no perder los entrenamientos que la usan
     public async Task Delete(int idUsuario, int idRutina)
     {
         var rutina = await GetRutinaDelUsuario(idUsuario, idRutina);
@@ -66,8 +66,7 @@ public class RutinaService : IRutinaService
         await _rutinaRepository.UpdateAsync(rutina);
     }
 
-    // Valida los ejercicios que mandó el cliente y arma las filas de EjercicioRutina.
-    // Lo usan Create y Update, así las reglas están en un solo lugar
+    // Valida los ejercicios y arma los EjercicioRutina (lo usan Create y Update)
     private async Task<List<EjercicioRutina>> ArmarEjerciciosRutina(List<CreationEjercicioRutinaDTO> ejercicios)
     {
         if (!ejercicios.Any())
@@ -109,8 +108,7 @@ public class RutinaService : IRutinaService
         return RutinaDTO.Create(rutina);
     }
 
-    // Devuelve la rutina solo si existe, está activa y es del usuario.
-    // Si es de otro usuario también da 404, así no se sabe que existe
+    // 404 si no existe, está inactiva o es de otro usuario
     private async Task<Rutina> GetRutinaDelUsuario(int idUsuario, int idRutina)
     {
         var rutina = await _rutinaRepository.GetByIdConEjerciciosAsync(idRutina);

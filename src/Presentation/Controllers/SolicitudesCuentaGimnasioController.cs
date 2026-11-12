@@ -22,7 +22,7 @@ public class SolicitudesCuentaGimnasioController : ControllerBase
     /// <summary>
     /// El responsable de un gimnasio pide su cuenta de admin. Queda inactiva hasta que la aprueben
     /// </summary>
-    // Es público porque el responsable del gimnasio todavía no tiene cuenta
+    // público, el responsable todavía no tiene cuenta
     [HttpPost]
     [AllowAnonymous]
     public async Task<ActionResult<SolicitudCuentaGimnasioDTO>> Create([FromBody] CreationSolicitudCuentaGimnasioDTO creationSolicitudDto)

@@ -39,7 +39,7 @@ public class EntrenamientoService : IEntrenamientoService
 
     public async Task<EntrenamientoDTO> Create(int idUsuario, CreationEntrenamientoDTO creationEntrenamientoDto)
     {
-        // Los campos son nullables en el DTO, pero si llegamos acá ya vienen: [Required] lo valida antes
+        // .Value es seguro, el [Required] ya validó
         DateTime fecha = creationEntrenamientoDto.Fecha!.Value;
         int duracionMinutos = creationEntrenamientoDto.DuracionMinutos!.Value;
 
@@ -69,8 +69,7 @@ public class EntrenamientoService : IEntrenamientoService
 
         ValidarDatosEntrenamiento(fecha, duracionMinutos);
 
-        // La rutina se valida solo si cambió. Si el entrenamiento se basó en una rutina que
-        // después se dio de baja, se tiene que poder seguir editando sin que dé 404
+        // La rutina se valida solo si cambió: si la original se dio de baja, igual se tiene que poder editar
         if (updateEntrenamientoDto.RutinaId != entrenamiento.RutinaId)
         {
             var rutina = await GetRutinaDelUsuario(idUsuario, updateEntrenamientoDto.RutinaId);
@@ -84,14 +83,14 @@ public class EntrenamientoService : IEntrenamientoService
         entrenamiento.DuracionMinutos = duracionMinutos;
         entrenamiento.Observaciones = updateEntrenamientoDto.Observaciones;
 
-        // Las series anteriores se sacan de la lista y EF las borra de la tabla
+        // EF borra las series que salen de la lista
         entrenamiento.RegistrosSerie.Clear();
         entrenamiento.RegistrosSerie.AddRange(registrosSerie);
 
         await _entrenamientoRepository.UpdateAsync(entrenamiento);
     }
 
-    // Borrado físico: del entrenamiento no depende nada y sus series se borran en cascada
+    // Borrado físico, las series se van en cascada
     public async Task Delete(int idUsuario, int idEntrenamiento)
     {
         var entrenamiento = await GetEntrenamientoDelUsuario(idUsuario, idEntrenamiento);
@@ -99,9 +98,7 @@ public class EntrenamientoService : IEntrenamientoService
         await _entrenamientoRepository.DeleteAsync(entrenamiento);
     }
 
-    // Devuelve el entrenamiento solo si existe y es del usuario.
-    // Si es de otro usuario también da 404, así no se sabe que existe.
-    // Lo van a usar también Update y Delete
+    // 404 si no existe o es de otro usuario
     private async Task<Entrenamiento> GetEntrenamientoDelUsuario(int idUsuario, int idEntrenamiento)
     {
         var entrenamiento = await _entrenamientoRepository.GetByIdConSeriesAsync(idEntrenamiento);
@@ -116,7 +113,7 @@ public class EntrenamientoService : IEntrenamientoService
 
     private void ValidarDatosEntrenamiento(DateTime fecha, int duracionMinutos)
     {
-        // No se puede registrar un entrenamiento que todavía no se hizo
+        // no se puede cargar algo que todavía no pasó
         if (fecha > DateTime.Now)
         {
             throw new ValidationException("La fecha del entrenamiento no puede ser futura");
@@ -128,7 +125,7 @@ public class EntrenamientoService : IEntrenamientoService
         }
     }
 
-    // Si no se mandó rutina devuelve null. Si se mandó, tiene que existir, estar activa y ser del usuario
+    // null si no mandó rutina
     private async Task<Rutina?> GetRutinaDelUsuario(int idUsuario, int? idRutina)
     {
         if (idRutina is null)
@@ -146,8 +143,7 @@ public class EntrenamientoService : IEntrenamientoService
         return rutina;
     }
 
-    // Valida las series que mandó el cliente y arma las filas de RegistroSerie.
-    // Lo va a usar también Update, así las reglas están en un solo lugar
+    // Valida las series y arma los RegistroSerie (lo usan Create y Update)
     private async Task<List<RegistroSerie>> ArmarRegistrosSerie(List<CreationRegistroSerieDTO> series)
     {
         if (!series.Any())
@@ -159,13 +155,13 @@ public class EntrenamientoService : IEntrenamientoService
 
         foreach (var s in series)
         {
-            // [Required] también valida cada serie de la lista, así que acá ya vienen todos los campos
+            // el [Required] valida cada serie de la lista, acá ya vienen completas
             int ejercicioId = s.EjercicioId!.Value;
             int numeroSerie = s.NumeroSerie!.Value;
             float peso = s.Peso!.Value;
             int repeticiones = s.Repeticiones!.Value;
 
-            // El peso puede ser 0 para ejercicios con el peso del cuerpo, como dominadas
+            // peso 0 = peso corporal (dominadas, etc.)
             if (numeroSerie <= 0 || repeticiones <= 0 || peso < 0)
             {
                 throw new ValidationException("El número de serie y las repeticiones deben ser mayores a cero y el peso no puede ser negativo");

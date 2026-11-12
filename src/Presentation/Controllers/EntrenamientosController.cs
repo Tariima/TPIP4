@@ -22,7 +22,6 @@ public class EntrenamientosController : ControllerBase
     /// <summary>
     /// Historial de entrenamientos del usuario, con filtro opcional por fechas
     /// </summary>
-    // Historial: las fechas van en la URL y son opcionales, ej: api/entrenamientos?desde=2026-11-01&hasta=2026-11-30
     [HttpGet]
     public async Task<ActionResult<List<EntrenamientoDTO>>> GetAll([FromQuery] DateTime? desde, [FromQuery] DateTime? hasta)
     {

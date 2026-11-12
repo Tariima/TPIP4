@@ -1,6 +1,6 @@
 namespace Application.Models;
 
-// Lo que ve un usuario Pro: cada gimnasio con sus beneficios vigentes
+// Para la lista de beneficios que ve el usuario Pro
 public class GimnasioConBeneficiosDTO
 {
     public int GimnasioId { get; set; }

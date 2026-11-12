@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Presentation.Controllers;
 
-// Datos para las gráficas de progreso. Solo para usuarios Pro (lo controla el service)
+// Solo Pro, lo valida el service
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "UsuarioComun")]

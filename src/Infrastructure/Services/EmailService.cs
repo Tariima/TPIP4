@@ -7,9 +7,8 @@ using MimeKit;
 
 namespace Infrastructure.Services;
 
-// Manda los mails por SMTP desde la cuenta de Gmail del proyecto, con la librería MailKit.
-// Los datos de la cuenta están en la sección "Email" de appsettings.json, menos la contraseña,
-// que se carga con user-secrets (local) o con una variable de entorno (Azure)
+// SMTP con Gmail usando MailKit. La config está en la sección "Email" del appsettings,
+// menos la contraseña, que va en user-secrets o en las variables de entorno de Azure
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _config;
@@ -32,11 +31,10 @@ public class EmailService : IEmailService
             mensaje.Body = new TextPart("plain") { Text = cuerpo };
 
             using var smtp = new SmtpClient();
-            // Por defecto espera hasta 2 minutos. Si Gmail no responde, cortamos a los 10 segundos
-            // para no dejar colgado el request que mandó el mail
+            // el default son 2 min, lo bajamos a 10 seg para no colgar el request
             smtp.Timeout = 10000;
 
-            // Gmail usa el puerto 587 con StartTls: la conexión se cifra antes de mandar la contraseña
+            // 587 + StartTls: se cifra antes de mandar la contraseña
             await smtp.ConnectAsync(_config["Email:Host"]!, int.Parse(_config["Email:Puerto"]!), SecureSocketOptions.StartTls);
             await smtp.AuthenticateAsync(_config["Email:Usuario"]!, _config["Email:Password"]!);
             await smtp.SendAsync(mensaje);
@@ -46,7 +44,7 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            // Si el mail no sale se registra el error y la operación que lo disparó sigue normalmente
+            // si falla solo se loguea, lo que mandó el mail sigue normal
             _logger.LogError(ex, "No se pudo mandar el mail a {Destinatario} | {Asunto}", destinatario, asunto);
         }
     }

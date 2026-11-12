@@ -28,7 +28,7 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Composiciones del diagrama: si se borra el todo se borran sus partes
+        // Composiciones (ver diagrama): se borran en cascada
         modelBuilder.Entity<Rutina>()
             .HasOne(r => r.UsuarioComun)
             .WithMany(u => u.Rutinas)
@@ -71,7 +71,7 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(b => b.GimnasioId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Asociaciones: no se borran en cascada
+        // Asociaciones: sin cascada
         modelBuilder.Entity<Entrenamiento>()
             .HasOne(e => e.Rutina)
             .WithMany(r => r.Entrenamientos)
@@ -140,12 +140,11 @@ public class ApplicationDbContext : DbContext
             .Property(p => p.Monto)
             .HasPrecision(10, 2);
 
-        // Los ejercicios vienen cargados de entrada, el usuario solo los elige
+        // Catálogo de ejercicios
         modelBuilder.Entity<Ejercicio>().HasData(CreateEjercicioDataSeed());
 
-        // El superadmin no se puede registrar desde la API, así que también viene cargado de entrada.
-        // La contraseña es "admin1234". Se guarda el hash de BCrypt ya calculado porque si se calcula
-        // acá cambia en cada ejecución y EF lo tomaría como un cambio en los datos de la semilla
+        // El superadmin no se registra por la API, va por seed. Contraseña: "admin1234".
+        // Va el hash ya calculado: si se genera acá cambia en cada ejecución y EF lo toma como un cambio en el seed
         modelBuilder.Entity<SuperAdmin>().HasData(new SuperAdmin
         {
             Id = 1,

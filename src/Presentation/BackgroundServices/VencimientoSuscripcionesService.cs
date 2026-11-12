@@ -2,8 +2,7 @@ using Application.Interfaces;
 
 namespace Presentation.BackgroundServices;
 
-// Proceso que corre solo mientras la API está prendida: al arrancar y después una vez por día.
-// A un controller lo dispara un request; a este lo dispara el reloj
+// Corre al arrancar la API y después cada 24 hs (solo mientras la API está levantada)
 public class VencimientoSuscripcionesService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -17,18 +16,16 @@ public class VencimientoSuscripcionesService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // "Despertador" que suena cada 24 horas
         using var timer = new PeriodicTimer(TimeSpan.FromHours(24));
 
-        // do-while: la primera vez corre apenas arranca la API, después espera al timer.
-        // WaitForNextTickAsync devuelve false cuando se apaga la API y ahí termina el ciclo
+        // do-while para que la primera corrida sea al arrancar.
+        // WaitForNextTickAsync da false cuando se apaga la API
         do
         {
             try
             {
-                // Este proceso vive toda la vida de la API, pero el service y el DbContext
-                // se crean uno por request. Por eso cada corrida arma su propio scope,
-                // como si fuera un request, y al terminar se descarta
+                // Esto es singleton y el service/DbContext son scoped,
+                // así que cada corrida crea su propio scope
                 using var scope = _scopeFactory.CreateScope();
                 var suscripcionService = scope.ServiceProvider.GetRequiredService<ISuscripcionService>();
 
@@ -38,8 +35,7 @@ public class VencimientoSuscripcionesService : BackgroundService
             }
             catch (Exception ex)
             {
-                // Si una corrida falla (ej: la base no responde) se registra y se sigue.
-                // Sin este catch la excepción apagaría el proceso, o incluso la API
+                // Si falla se loguea y sigue. Sin el catch la excepción puede bajar la API
                 _logger.LogError(ex, "Error al procesar el vencimiento de suscripciones");
             }
         }

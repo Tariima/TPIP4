@@ -10,8 +10,7 @@ namespace Application.Services;
 
 public class HorarioService : IHorarioService
 {
-    // Días válidos para un horario. Se guardan siempre escritos así, sin importar cómo los mande el admin.
-    // Es público porque las reservas lo usan para saber qué día de la semana es una fecha
+    // Así se guardan los días. Es público porque también lo usa ReservaService
     public static readonly string[] DiasSemana = { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
 
     private readonly IHorarioRepository _horarioRepository;
@@ -30,7 +29,7 @@ public class HorarioService : IHorarioService
         int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
         var horarioList = await _horarioRepository.GetActivosByGimnasioAsync(gimnasioId);
 
-        // Se ordenan por día de la semana (empezando por el lunes) y después por hora
+        // de lunes a domingo y después por hora
         var horariosOrdenados = horarioList
             .OrderBy(h => Array.IndexOf(DiasSemana, h.DiaSemana))
             .ThenBy(h => h.HoraInicio)
@@ -71,7 +70,7 @@ public class HorarioService : IHorarioService
         await _horarioRepository.UpdateAsync(horario);
     }
 
-    // Se desactiva en vez de borrarlo, así no se pierden las reservas que se hicieron en ese horario
+    // baja lógica, para no perder las reservas de ese horario
     public async Task Delete(int idAdmin, int idHorario)
     {
         int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
@@ -82,11 +81,10 @@ public class HorarioService : IHorarioService
         await _horarioRepository.UpdateAsync(horario);
     }
 
-    // Valida los datos que mandó el admin y los pasa al horario.
-    // Lo usan Create y Update, así las reglas están en un solo lugar
+    // Validaciones comunes de Create y Update
     private void CargarDatos(Horario horario, CreationHorarioDTO creationHorarioDto)
     {
-        // Se compara sin importar mayúsculas ni tildes: "miercoles" vale como "Miércoles"
+        // ignora mayúsculas y tildes: "miercoles" == "Miércoles"
         string? dia = DiasSemana.FirstOrDefault(d => string.Compare(d, creationHorarioDto.DiaSemana.Trim(),
             CultureInfo.InvariantCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) == 0);
 
@@ -114,8 +112,7 @@ public class HorarioService : IHorarioService
         horario.CupoMaximo = creationHorarioDto.CupoMaximo;
     }
 
-    // Pasa una hora "HH:mm" a DateTime. Del horario solo importa la hora (el día va en DiaSemana),
-    // por eso se guarda siempre con la misma fecha y así las horas se pueden comparar entre sí
+    // La hora se guarda con una fecha fija (MinValue) para poder comparar horas entre sí
     private DateTime ConvertirHora(string hora, string nombre)
     {
         if (!DateTime.TryParseExact(hora.Trim(), "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime horaConvertida))
@@ -126,7 +123,7 @@ public class HorarioService : IHorarioService
         return DateTime.MinValue.Add(horaConvertida.TimeOfDay);
     }
 
-    // Cada admin maneja solo los horarios de su gimnasio. El gimnasio sale de su cuenta, no de lo que manda el cliente
+    // El gimnasio sale de la cuenta del admin, no del request
     private async Task<int> GetGimnasioDelAdmin(int idAdmin)
     {
         var admin = await _usuarioRepository.GetByIdAsync(idAdmin) as AdminGimnasio;
@@ -146,8 +143,7 @@ public class HorarioService : IHorarioService
         return gimnasio.Id;
     }
 
-    // Devuelve el horario solo si existe, está activo y es del gimnasio del admin.
-    // Si es de otro gimnasio también da 404, así no se sabe que existe
+    // 404 si no existe, está inactivo o es de otro gimnasio
     private async Task<Horario> GetHorarioDelGimnasio(int gimnasioId, int idHorario)
     {
         var horario = await _horarioRepository.GetByIdAsync(idHorario);

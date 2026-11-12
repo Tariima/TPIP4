@@ -15,7 +15,7 @@ public class SolicitudCuentaGimnasioRepository : RepositoryBase<SolicitudCuentaG
         _context = context;
     }
 
-    // Si no se pasa un estado trae todas las solicitudes
+    // sin estado trae todas
     public async Task<List<SolicitudCuentaGimnasio>> GetConGimnasioAsync(EstadoSolicitud? estado)
     {
         return await _context.SolicitudesCuentaGimnasio

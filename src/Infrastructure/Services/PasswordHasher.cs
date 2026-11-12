@@ -2,7 +2,7 @@ using Application.Interfaces;
 
 namespace Infrastructure.Services;
 
-// BCrypt es un paquete de terceros, por eso la implementación va en Infraestructura
+// En Infrastructure porque depende de BCrypt (paquete externo)
 public class PasswordHasher : IPasswordHasher
 {
     public string Hash(string contrasena)

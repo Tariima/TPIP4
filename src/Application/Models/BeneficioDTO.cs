@@ -11,7 +11,7 @@ public class BeneficioDTO
     public float PorcentajeDescuento { get; set; }
     public DateTime VigenteDesde { get; set; }
     public DateTime VigenteHasta { get; set; }
-    // Si hoy está dentro del período de vigencia. Le sirve al admin para ver cuáles ya vencieron o todavía no empezaron
+    // true si hoy está dentro de la vigencia
     public bool Vigente { get; set; }
 
     public static BeneficioDTO Create(Beneficio beneficio)

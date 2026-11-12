@@ -2,7 +2,7 @@ using Domain.Entities;
 
 namespace Application.Models;
 
-// Datos del perfil del usuario, tampoco incluye la contraseña
+// sin la contraseña
 public class UsuarioComunDTO
 {
     public int Id { get; set; }

@@ -20,9 +20,9 @@ public class EntrenamientoDTO
         dto.DuracionMinutos = entrenamiento.DuracionMinutos;
         dto.Observaciones = entrenamiento.Observaciones;
         dto.RutinaId = entrenamiento.RutinaId;
-        // Si el entrenamiento no se basó en una rutina queda en null
+        // null si no se usó una rutina
         dto.NombreRutina = entrenamiento.Rutina?.Nombre;
-        // Las series se muestran agrupadas por ejercicio y en el orden en que se hicieron
+        // ordenadas por ejercicio y número de serie
         dto.Series = RegistroSerieDTO.CreateList(entrenamiento.RegistrosSerie
             .OrderBy(rs => rs.EjercicioId)
             .ThenBy(rs => rs.NumeroSerie)

@@ -60,8 +60,7 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
-    // El id del usuario logueado viene en el claim "sub" del token.
-    // Al validar el token, ASP.NET lo guarda en User con el tipo ClaimTypes.NameIdentifier
+    // el id viene en el claim "sub", ASP.NET lo mapea a NameIdentifier
     private int GetIdUsuario()
     {
         return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

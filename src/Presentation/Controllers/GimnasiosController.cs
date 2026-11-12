@@ -9,7 +9,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// El alta, modificación y baja se limitan a SuperAdmin en cada endpoint
+// alta, modificación y baja: solo SuperAdmin
 [Authorize(Roles = "SuperAdmin,UsuarioComun")]
 public class GimnasiosController : ControllerBase
 {
@@ -23,7 +23,7 @@ public class GimnasiosController : ControllerBase
     /// <summary>
     /// Gimnasios activos. No pide token
     /// </summary>
-    // Es público para que el responsable de un gimnasio pueda elegirlo al pedir la cuenta
+    // público: el responsable lo necesita para elegir el gimnasio al pedir la cuenta
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<List<GimnasioDTO>>> GetActivos()
