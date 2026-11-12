@@ -14,14 +14,16 @@ public class ReservaService : IReservaService
     private readonly IHorarioRepository _horarioRepository;
     private readonly IGimnasioRepository _gimnasioRepository;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IEmailService _emailService;
 
     public ReservaService(IReservaRepository reservaRepository, IHorarioRepository horarioRepository,
-        IGimnasioRepository gimnasioRepository, IUsuarioRepository usuarioRepository)
+        IGimnasioRepository gimnasioRepository, IUsuarioRepository usuarioRepository, IEmailService emailService)
     {
         _reservaRepository = reservaRepository;
         _horarioRepository = horarioRepository;
         _gimnasioRepository = gimnasioRepository;
         _usuarioRepository = usuarioRepository;
+        _emailService = emailService;
     }
 
     // Horarios del gimnasio para el día de la semana de esa fecha que todavía tienen lugar
@@ -123,6 +125,17 @@ public class ReservaService : IReservaService
         nuevaReserva.Horario = horario;
 
         var reservaCreada = await _reservaRepository.CreateAsync(nuevaReserva);
+
+        var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
+
+        if (usuario is not null)
+        {
+            await _emailService.EnviarAsync(
+                usuario.Email,
+                "Reserva confirmada",
+                $"Hola {usuario.Nombre}, tu reserva en {horario.Gimnasio.Nombre} quedó confirmada para el {fechaTurno:dd/MM/yyyy} a las {fechaTurno:HH:mm}.");
+        }
+
         return ReservaDTO.Create(reservaCreada);
     }
 
@@ -145,6 +158,16 @@ public class ReservaService : IReservaService
         reserva.FechaCancelacion = DateTime.Now;
 
         await _reservaRepository.UpdateAsync(reserva);
+
+        var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
+
+        if (usuario is not null)
+        {
+            await _emailService.EnviarAsync(
+                usuario.Email,
+                "Reserva cancelada",
+                $"Hola {usuario.Nombre}, cancelaste tu reserva en {reserva.Horario.Gimnasio.Nombre} del {reserva.FechaTurno:dd/MM/yyyy} a las {reserva.FechaTurno:HH:mm}.");
+        }
     }
 
     // Reservas del gimnasio del admin en una fecha. El horario es opcional: si viene, se filtra por ese horario

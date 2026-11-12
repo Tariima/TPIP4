@@ -14,14 +14,17 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
     private readonly IGimnasioRepository _gimnasioRepository;
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IEmailService _emailService;
 
     public SolicitudCuentaGimnasioService(ISolicitudCuentaGimnasioRepository solicitudCuentaGimnasioRepository,
-        IGimnasioRepository gimnasioRepository, IUsuarioRepository usuarioRepository, IPasswordHasher passwordHasher)
+        IGimnasioRepository gimnasioRepository, IUsuarioRepository usuarioRepository, IPasswordHasher passwordHasher,
+        IEmailService emailService)
     {
         _solicitudCuentaGimnasioRepository = solicitudCuentaGimnasioRepository;
         _gimnasioRepository = gimnasioRepository;
         _usuarioRepository = usuarioRepository;
         _passwordHasher = passwordHasher;
+        _emailService = emailService;
     }
 
     public async Task<SolicitudCuentaGimnasioDTO> Create(CreationSolicitudCuentaGimnasioDTO creationSolicitudDto)
@@ -124,6 +127,11 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
 
         await _usuarioRepository.UpdateAsync(admin);
         await _solicitudCuentaGimnasioRepository.UpdateAsync(solicitud);
+
+        await _emailService.EnviarAsync(
+            admin.Email,
+            "Tu cuenta de gimnasio fue aprobada",
+            $"Hola {admin.Nombre}, aprobamos tu cuenta como admin de {solicitud.Gimnasio.Nombre}. Ya podés iniciar sesión.");
     }
 
     // Al rechazar la cuenta del solicitante queda inactiva, así que no puede loguearse

@@ -75,8 +75,8 @@ builder.Services.AddScoped<IHorarioService, HorarioService>();
 builder.Services.AddScoped<IBeneficioService, BeneficioService>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IProgresoService, ProgresoService>();
-// Provisorio hasta tener el servicio de mails real (#132): los mails se escriben en el log
-builder.Services.AddScoped<IEmailService, EmailLogService>();
+// Mails por SMTP con Gmail (MailKit). La contraseña no está en appsettings: va en user-secrets o en variables de entorno de Azure
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICustomAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 #endregion
