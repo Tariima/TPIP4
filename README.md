@@ -74,7 +74,6 @@ Entrando a esa URL redirige directo a Swagger ([link directo](https://tpip4-api-
    Sin esto la API levanta igual y anda todo, pero no se puede pagar la suscripción y los mails no salen (el error queda en el log y la operación sigue).
 
 3. Correr la API:
-
    - Desde Visual Studio: abrir `TPIP4.slnx`, dejar `Presentation` como proyecto de inicio y darle a ejecutar con el perfil `http`.
    - Desde la consola, parado en la carpeta del repo:
 
@@ -107,7 +106,6 @@ El pago de la suscripción solo se puede probar completo en Azure: Mercado Pago 
 
 - [Endpoints](docs/endpoints.md): qué recibe y qué devuelve cada endpoint, con los status codes.
 - [Diagrama de clases](docs/diagrama-clases.md)
-- En Swagger también aparece una descripción corta de cada endpoint (sale de los comentarios `///` de los controllers).
 
 ## Deploy
 
