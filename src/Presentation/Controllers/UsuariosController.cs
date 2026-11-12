@@ -18,6 +18,9 @@ public class UsuariosController : ControllerBase
         _usuarioService = usuarioService;
     }
 
+    /// <summary>
+    /// Registro de un usuario nuevo. No pide token
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<UsuarioDTO>> Create([FromBody] CreationUsuarioDTO creationUsuarioDto)
     {
@@ -25,6 +28,9 @@ public class UsuariosController : ControllerBase
         return Created($"api/usuarios/{usuarioCreado.Id}", usuarioCreado);
     }
 
+    /// <summary>
+    /// Perfil del usuario logueado
+    /// </summary>
     [HttpGet("perfil")]
     [Authorize(Roles = "UsuarioComun")]
     public async Task<ActionResult<UsuarioComunDTO>> GetPerfil()
@@ -32,6 +38,9 @@ public class UsuariosController : ControllerBase
         return await _usuarioService.GetById(GetIdUsuario());
     }
 
+    /// <summary>
+    /// Modifica los datos del perfil. El email no se puede cambiar
+    /// </summary>
     [HttpPut("perfil")]
     [Authorize(Roles = "UsuarioComun")]
     public async Task<ActionResult> UpdatePerfil([FromBody] UpdateUsuarioDTO updateUsuarioDto)
@@ -40,6 +49,9 @@ public class UsuariosController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Cambia la contraseña. Hay que mandar la actual
+    /// </summary>
     [HttpPut("perfil/contrasena")]
     [Authorize(Roles = "UsuarioComun")]
     public async Task<ActionResult> UpdateContrasena([FromBody] UpdateContrasenaDTO updateContrasenaDto)

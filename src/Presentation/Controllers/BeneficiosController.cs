@@ -20,7 +20,9 @@ public class BeneficiosController : ControllerBase
         _beneficioService = beneficioService;
     }
 
-    // Los beneficios del gimnasio del admin (vigentes o no)
+    /// <summary>
+    /// Beneficios del gimnasio del admin logueado, vigentes o no
+    /// </summary>
     [HttpGet("gimnasio")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult<List<BeneficioDTO>>> GetAllDelGimnasio()
@@ -28,7 +30,9 @@ public class BeneficiosController : ControllerBase
         return await _beneficioService.GetAllDelGimnasio(GetIdUsuario());
     }
 
-    // Para usuarios Pro: gimnasios con beneficios vigentes hoy
+    /// <summary>
+    /// Gimnasios que hoy tienen beneficios vigentes. Solo para usuarios Pro
+    /// </summary>
     [HttpGet("vigentes")]
     [Authorize(Roles = "UsuarioComun")]
     public async Task<ActionResult<List<GimnasioConBeneficiosDTO>>> GetVigentes()
@@ -36,6 +40,9 @@ public class BeneficiosController : ControllerBase
         return await _beneficioService.GetVigentes(GetIdUsuario());
     }
 
+    /// <summary>
+    /// Un beneficio del gimnasio del admin
+    /// </summary>
     [HttpGet("{id}")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult<BeneficioDTO>> GetById([FromRoute] int id)
@@ -43,6 +50,9 @@ public class BeneficiosController : ControllerBase
         return await _beneficioService.GetById(GetIdUsuario(), id);
     }
 
+    /// <summary>
+    /// Carga un beneficio en el gimnasio del admin
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult<BeneficioDTO>> Create([FromBody] CreationBeneficioDTO creationBeneficioDto)
@@ -51,6 +61,9 @@ public class BeneficiosController : ControllerBase
         return Created($"api/beneficios/{beneficioCreado.Id}", beneficioCreado);
     }
 
+    /// <summary>
+    /// Modifica un beneficio del gimnasio del admin
+    /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult> Update([FromRoute] int id, [FromBody] CreationBeneficioDTO creationBeneficioDto)
@@ -59,6 +72,9 @@ public class BeneficiosController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Da de baja un beneficio (baja lógica)
+    /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "AdminGimnasio")]
     public async Task<ActionResult> Delete([FromRoute] int id)

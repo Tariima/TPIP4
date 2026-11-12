@@ -1,3 +1,446 @@
+# Requests para probar la API. En Visual Studio arriba de cada una aparece "Enviar solicitud".
+# Para probar contra Azure cambiar la URL de abajo por la de Azure:
+# https://tpip4-api-fdezbhhba9czawe3.westus3-01.azurewebsites.net
 @Presentation_HostAddress = http://localhost:5010
+
+# Después de cada login copiar el token que devuelve y pegarlo en la variable que corresponda
+@tokenSuperAdmin = pegar-el-token
+@tokenAdmin = pegar-el-token
+@tokenUsuario = pegar-el-token
+
+# Los ids de los ejemplos (gimnasio 1, horario 1, etc.) son los que quedan si se arranca con la base vacía.
+# Las fechas hay que cambiarlas por unas que no hayan pasado.
+
+
+###########################################
+# SUPERADMIN
+###########################################
+
+###
+# Login con el superadmin que se crea en la migración
+POST {{Presentation_HostAddress}}/api/authentication/authenticate
+Content-Type: application/json
+
+{
+  "email": "superadmin@tpip4.com",
+  "contrasena": "admin1234"
+}
+
+###
+# Alta de gimnasio
+POST {{Presentation_HostAddress}}/api/gimnasios
+Authorization: Bearer {{tokenSuperAdmin}}
+Content-Type: application/json
+
+{
+  "nombre": "Gimnasio Centro",
+  "direccion": "Córdoba 1234",
+  "telefono": "3415551234",
+  "email": "contacto@gimnasiocentro.com"
+}
+
+###
+# Todos los gimnasios (también los dados de baja)
+GET {{Presentation_HostAddress}}/api/gimnasios/todos
+Authorization: Bearer {{tokenSuperAdmin}}
+
+###
+GET {{Presentation_HostAddress}}/api/gimnasios/1
+Authorization: Bearer {{tokenSuperAdmin}}
+
+###
+# Modificar gimnasio
+PUT {{Presentation_HostAddress}}/api/gimnasios/1
+Authorization: Bearer {{tokenSuperAdmin}}
+Content-Type: application/json
+
+{
+  "nombre": "Gimnasio Centro",
+  "direccion": "Córdoba 1500",
+  "telefono": "3415551234",
+  "email": "contacto@gimnasiocentro.com"
+}
+
+
+###########################################
+# CUENTA DE ADMIN DE GIMNASIO
+###########################################
+
+###
+# Gimnasios activos (no pide token)
+GET {{Presentation_HostAddress}}/api/gimnasios
+
+###
+# El responsable del gimnasio pide la cuenta (no pide token). Queda inactiva hasta que se apruebe
+POST {{Presentation_HostAddress}}/api/solicitudescuentagimnasio
+Content-Type: application/json
+
+{
+  "gimnasioId": 1,
+  "nombre": "Laura",
+  "apellido": "Gómez",
+  "email": "laura@gimnasiocentro.com",
+  "contrasena": "laura1234"
+}
+
+###
+# El superadmin ve las solicitudes pendientes (estado puede ser Pendiente, Aprobada o Rechazada)
+GET {{Presentation_HostAddress}}/api/solicitudescuentagimnasio?estado=Pendiente
+Authorization: Bearer {{tokenSuperAdmin}}
+
+###
+GET {{Presentation_HostAddress}}/api/solicitudescuentagimnasio/1
+Authorization: Bearer {{tokenSuperAdmin}}
+
+###
+# Aprobar: se activa la cuenta y le llega un mail
+PATCH {{Presentation_HostAddress}}/api/solicitudescuentagimnasio/1/aprobar
+Authorization: Bearer {{tokenSuperAdmin}}
+
+###
+# Rechazar es la otra opción. Si la solicitud ya se aprobó da 409
+PATCH {{Presentation_HostAddress}}/api/solicitudescuentagimnasio/1/rechazar
+Authorization: Bearer {{tokenSuperAdmin}}
+
+
+###########################################
+# ADMIN DE GIMNASIO
+###########################################
+
+###
+# Login del admin (solo funciona si la solicitud ya está aprobada)
+POST {{Presentation_HostAddress}}/api/authentication/authenticate
+Content-Type: application/json
+
+{
+  "email": "laura@gimnasiocentro.com",
+  "contrasena": "laura1234"
+}
+
+###
+# Crear horario. Día de Lunes a Domingo, horas en formato HH:mm
+POST {{Presentation_HostAddress}}/api/horarios
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "diaSemana": "Lunes",
+  "horaInicio": "08:00",
+  "horaFin": "09:00",
+  "cupoMaximo": 10
+}
+
+###
+GET {{Presentation_HostAddress}}/api/horarios
+Authorization: Bearer {{tokenAdmin}}
+
+###
+GET {{Presentation_HostAddress}}/api/horarios/1
+Authorization: Bearer {{tokenAdmin}}
+
+###
+PUT {{Presentation_HostAddress}}/api/horarios/1
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "diaSemana": "Lunes",
+  "horaInicio": "08:00",
+  "horaFin": "09:30",
+  "cupoMaximo": 15
+}
+
+###
+# Cargar beneficio
+POST {{Presentation_HostAddress}}/api/beneficios
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "titulo": "20% en la cuota",
+  "descripcion": "Descuento en la cuota mensual para usuarios Pro",
+  "tipo": "Descuento en cuota",
+  "porcentajeDescuento": 20,
+  "vigenteDesde": "2026-11-01",
+  "vigenteHasta": "2026-12-31"
+}
+
+###
+GET {{Presentation_HostAddress}}/api/beneficios/gimnasio
+Authorization: Bearer {{tokenAdmin}}
+
+###
+GET {{Presentation_HostAddress}}/api/beneficios/1
+Authorization: Bearer {{tokenAdmin}}
+
+###
+PUT {{Presentation_HostAddress}}/api/beneficios/1
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "titulo": "25% en la cuota",
+  "descripcion": "Descuento en la cuota mensual para usuarios Pro",
+  "tipo": "Descuento en cuota",
+  "porcentajeDescuento": 25,
+  "vigenteDesde": "2026-11-01",
+  "vigenteHasta": "2026-12-31"
+}
+
+
+###########################################
+# USUARIO
+###########################################
+
+###
+# Registro (no pide token)
+POST {{Presentation_HostAddress}}/api/usuarios
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan@mail.com",
+  "contrasena": "juan1234",
+  "fechaNacimiento": "2000-05-20",
+  "peso": 75.5,
+  "altura": 1.78
+}
+
+###
+POST {{Presentation_HostAddress}}/api/authentication/authenticate
+Content-Type: application/json
+
+{
+  "email": "juan@mail.com",
+  "contrasena": "juan1234"
+}
+
+###
+GET {{Presentation_HostAddress}}/api/usuarios/perfil
+Authorization: Bearer {{tokenUsuario}}
+
+###
+PUT {{Presentation_HostAddress}}/api/usuarios/perfil
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "fechaNacimiento": "2000-05-20",
+  "peso": 74,
+  "altura": 1.78
+}
+
+###
+# Después de esto el login es con la contraseña nueva
+PUT {{Presentation_HostAddress}}/api/usuarios/perfil/contrasena
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "contrasenaActual": "juan1234",
+  "contrasenaNueva": "juan5678"
+}
+
+###
+# Ejercicios cargados por la migración. El filtro es opcional
+GET {{Presentation_HostAddress}}/api/ejercicios?grupoMuscular=Pecho
+Authorization: Bearer {{tokenUsuario}}
+
+###
+GET {{Presentation_HostAddress}}/api/ejercicios/1
+Authorization: Bearer {{tokenUsuario}}
+
+###
+# Crear rutina
+POST {{Presentation_HostAddress}}/api/rutinas
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "nombre": "Pecho y tríceps",
+  "descripcion": "Rutina de los lunes",
+  "ejercicios": [
+    { "ejercicioId": 1, "orden": 1, "seriesObjetivo": 4, "repeticionesObjetivo": 10 },
+    { "ejercicioId": 2, "orden": 2, "seriesObjetivo": 3, "repeticionesObjetivo": 12 },
+    { "ejercicioId": 13, "orden": 3, "seriesObjetivo": 3, "repeticionesObjetivo": 15 }
+  ]
+}
+
+###
+GET {{Presentation_HostAddress}}/api/rutinas
+Authorization: Bearer {{tokenUsuario}}
+
+###
+GET {{Presentation_HostAddress}}/api/rutinas/1
+Authorization: Bearer {{tokenUsuario}}
+
+###
+# La lista de ejercicios reemplaza a la que tenía
+PUT {{Presentation_HostAddress}}/api/rutinas/1
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "nombre": "Pecho y tríceps",
+  "descripcion": "Rutina de los lunes",
+  "ejercicios": [
+    { "ejercicioId": 1, "orden": 1, "seriesObjetivo": 5, "repeticionesObjetivo": 8 },
+    { "ejercicioId": 13, "orden": 2, "seriesObjetivo": 3, "repeticionesObjetivo": 15 }
+  ]
+}
+
+###
+# Registrar entrenamiento. La fecha no puede ser futura y la rutina es opcional
+POST {{Presentation_HostAddress}}/api/entrenamientos
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "fecha": "2026-11-10",
+  "duracionMinutos": 60,
+  "observaciones": "Me costó la última serie",
+  "rutinaId": 1,
+  "series": [
+    { "ejercicioId": 1, "numeroSerie": 1, "peso": 60, "repeticiones": 10 },
+    { "ejercicioId": 1, "numeroSerie": 2, "peso": 62.5, "repeticiones": 8 },
+    { "ejercicioId": 13, "numeroSerie": 1, "peso": 20, "repeticiones": 15 }
+  ]
+}
+
+###
+# Historial. Las fechas son opcionales
+GET {{Presentation_HostAddress}}/api/entrenamientos?desde=2026-11-01&hasta=2026-11-30
+Authorization: Bearer {{tokenUsuario}}
+
+###
+GET {{Presentation_HostAddress}}/api/entrenamientos/1
+Authorization: Bearer {{tokenUsuario}}
+
+###
+PUT {{Presentation_HostAddress}}/api/entrenamientos/1
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "fecha": "2026-11-10",
+  "duracionMinutos": 70,
+  "observaciones": "",
+  "rutinaId": null,
+  "series": [
+    { "ejercicioId": 1, "numeroSerie": 1, "peso": 60, "repeticiones": 10 }
+  ]
+}
+
+###
+# Contratar o renovar Pro. Devuelve el link de Mercado Pago para pagar
+POST {{Presentation_HostAddress}}/api/suscripciones/pagar
+Authorization: Bearer {{tokenUsuario}}
+
+###
+GET {{Presentation_HostAddress}}/api/suscripciones
+Authorization: Bearer {{tokenUsuario}}
+
+###
+# Gráficas de progreso (solo Pro). Las fechas son opcionales
+GET {{Presentation_HostAddress}}/api/progreso/ejercicios/1?desde=2026-10-01&hasta=2026-11-30
+Authorization: Bearer {{tokenUsuario}}
+
+###
+GET {{Presentation_HostAddress}}/api/progreso/semanal
+Authorization: Bearer {{tokenUsuario}}
+
+###
+# Beneficios vigentes (solo Pro)
+GET {{Presentation_HostAddress}}/api/beneficios/vigentes
+Authorization: Bearer {{tokenUsuario}}
+
+###
+# Horarios de un gimnasio para un día, con el cupo que queda
+GET {{Presentation_HostAddress}}/api/reservas/disponibles?gimnasioId=1&fecha=2026-11-16
+Authorization: Bearer {{tokenUsuario}}
+
+###
+# Reservar. El día de la fecha tiene que coincidir con el del horario
+POST {{Presentation_HostAddress}}/api/reservas
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{
+  "horarioId": 1,
+  "fecha": "2026-11-16"
+}
+
+###
+GET {{Presentation_HostAddress}}/api/reservas
+Authorization: Bearer {{tokenUsuario}}
+
+###
+GET {{Presentation_HostAddress}}/api/reservas/1
+Authorization: Bearer {{tokenUsuario}}
+
+###
+PATCH {{Presentation_HostAddress}}/api/reservas/1/cancelar
+Authorization: Bearer {{tokenUsuario}}
+
+
+###########################################
+# RESERVAS DEL GIMNASIO (admin)
+###########################################
+
+###
+# Reservas de un día. El horarioId es opcional
+GET {{Presentation_HostAddress}}/api/reservas/gimnasio?fecha=2026-11-16&horarioId=1
+Authorization: Bearer {{tokenAdmin}}
+
+###
+# Estadísticas de un período (máximo un año)
+GET {{Presentation_HostAddress}}/api/reservas/estadisticas?desde=2026-11-01&hasta=2026-11-30
+Authorization: Bearer {{tokenAdmin}}
+
+
+###########################################
+# OTROS
+###########################################
+
+###
+# Webhook de Mercado Pago. Normalmente lo llama Mercado Pago solo, esto es para ver qué formato tiene.
+# Con un id que no existe no hace nada y devuelve 200 (necesita el token de Mercado Pago configurado)
+POST {{Presentation_HostAddress}}/api/pagos/webhook
+Content-Type: application/json
+
+{
+  "action": "order.processed",
+  "type": "order",
+  "data": { "id": "ORD01JYH1Z1YJN4HZ8J3Q0RB3YP6D" }
+}
+
+
+###########################################
+# BAJAS (quedan al final para no romper las requests de arriba)
+###########################################
+
+###
+DELETE {{Presentation_HostAddress}}/api/entrenamientos/1
+Authorization: Bearer {{tokenUsuario}}
+
+###
+DELETE {{Presentation_HostAddress}}/api/rutinas/1
+Authorization: Bearer {{tokenUsuario}}
+
+###
+DELETE {{Presentation_HostAddress}}/api/beneficios/1
+Authorization: Bearer {{tokenAdmin}}
+
+###
+DELETE {{Presentation_HostAddress}}/api/horarios/1
+Authorization: Bearer {{tokenAdmin}}
+
+###
+# Baja de gimnasio. También desactiva sus horarios y beneficios
+DELETE {{Presentation_HostAddress}}/api/gimnasios/1
+Authorization: Bearer {{tokenSuperAdmin}}
 
 ###

@@ -19,6 +19,9 @@ public class SolicitudesCuentaGimnasioController : ControllerBase
         _solicitudCuentaGimnasioService = solicitudCuentaGimnasioService;
     }
 
+    /// <summary>
+    /// El responsable de un gimnasio pide su cuenta de admin. Queda inactiva hasta que la aprueben
+    /// </summary>
     // Es público porque el responsable del gimnasio todavía no tiene cuenta
     [HttpPost]
     [AllowAnonymous]
@@ -28,18 +31,27 @@ public class SolicitudesCuentaGimnasioController : ControllerBase
         return Created($"api/solicitudescuentagimnasio/{solicitudCreada.Id}", solicitudCreada);
     }
 
+    /// <summary>
+    /// Lista las solicitudes. Se puede filtrar por estado (Pendiente, Aprobada o Rechazada)
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<SolicitudCuentaGimnasioDTO>>> GetAll([FromQuery] string? estado)
     {
         return await _solicitudCuentaGimnasioService.GetAll(estado);
     }
 
+    /// <summary>
+    /// Una solicitud por id
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<SolicitudCuentaGimnasioDTO>> GetById([FromRoute] int id)
     {
         return await _solicitudCuentaGimnasioService.GetById(id);
     }
 
+    /// <summary>
+    /// Aprueba la solicitud, activa la cuenta del admin y le manda un mail
+    /// </summary>
     [HttpPatch("{id}/aprobar")]
     public async Task<ActionResult> Aprobar([FromRoute] int id)
     {
@@ -47,6 +59,9 @@ public class SolicitudesCuentaGimnasioController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Rechaza la solicitud
+    /// </summary>
     [HttpPatch("{id}/rechazar")]
     public async Task<ActionResult> Rechazar([FromRoute] int id)
     {

@@ -16,6 +16,9 @@ public class PagosController : ControllerBase
         _pagoService = pagoService;
     }
 
+    /// <summary>
+    /// Webhook de Mercado Pago. Lo llama Mercado Pago cuando cambia una orden, no se usa desde el front
+    /// </summary>
     // Webhook: Mercado Pago llama acá cuando cambia el estado de una orden.
     // Hay que responder 200 rápido; si responde error, Mercado Pago vuelve a mandar el aviso más tarde
     [HttpPost("webhook")]

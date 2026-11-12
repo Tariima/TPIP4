@@ -20,6 +20,9 @@ public class GimnasiosController : ControllerBase
         _gimnasioService = gimnasioService;
     }
 
+    /// <summary>
+    /// Gimnasios activos. No pide token
+    /// </summary>
     // Es público para que el responsable de un gimnasio pueda elegirlo al pedir la cuenta
     [HttpGet]
     [AllowAnonymous]
@@ -28,6 +31,9 @@ public class GimnasiosController : ControllerBase
         return await _gimnasioService.GetActivos();
     }
 
+    /// <summary>
+    /// Todos los gimnasios, también los dados de baja
+    /// </summary>
     [HttpGet("todos")]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<ActionResult<List<GimnasioDTO>>> GetAll()
@@ -35,12 +41,18 @@ public class GimnasiosController : ControllerBase
         return await _gimnasioService.GetAll();
     }
 
+    /// <summary>
+    /// Un gimnasio por id
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<GimnasioDTO>> GetById([FromRoute] int id)
     {
         return await _gimnasioService.GetById(id);
     }
 
+    /// <summary>
+    /// Alta de un gimnasio
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<ActionResult<GimnasioDTO>> Create([FromBody] CreationGimnasioDTO creationGimnasioDto)
@@ -49,6 +61,9 @@ public class GimnasiosController : ControllerBase
         return Created($"api/gimnasios/{gimnasioCreado.Id}", gimnasioCreado);
     }
 
+    /// <summary>
+    /// Modifica los datos de un gimnasio
+    /// </summary>
     [HttpPut("{id}")]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<ActionResult> Update([FromRoute] int id, [FromBody] CreationGimnasioDTO creationGimnasioDto)
@@ -57,6 +72,9 @@ public class GimnasiosController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Baja lógica de un gimnasio. También desactiva sus horarios y beneficios
+    /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<ActionResult> Delete([FromRoute] int id)
