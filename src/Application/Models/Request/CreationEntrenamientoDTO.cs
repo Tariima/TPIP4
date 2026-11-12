@@ -4,10 +4,12 @@ namespace Application.Models.Request;
 
 public class CreationEntrenamientoDTO
 {
+    // Son nullables para que Required funcione: si no vienen quedan en null y se rechaza el request.
+    // Con DateTime e int comunes quedarían en 01/01/0001 y en 0 y se aceptarían igual
     [Required(ErrorMessage = "La fecha es requerida.")]
-    public DateTime Fecha { get; set; }
+    public DateTime? Fecha { get; set; }
     [Required(ErrorMessage = "La duración es requerida.")]
-    public int DuracionMinutos { get; set; }
+    public int? DuracionMinutos { get; set; }
     public string Observaciones { get; set; } = string.Empty;
     // Opcional: solo se manda si el entrenamiento se basó en una rutina
     public int? RutinaId { get; set; }

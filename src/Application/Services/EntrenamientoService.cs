@@ -39,14 +39,18 @@ public class EntrenamientoService : IEntrenamientoService
 
     public async Task<EntrenamientoDTO> Create(int idUsuario, CreationEntrenamientoDTO creationEntrenamientoDto)
     {
-        ValidarDatosEntrenamiento(creationEntrenamientoDto.Fecha, creationEntrenamientoDto.DuracionMinutos);
+        // Los campos son nullables en el DTO, pero si llegamos acá ya vienen: [Required] lo valida antes
+        DateTime fecha = creationEntrenamientoDto.Fecha!.Value;
+        int duracionMinutos = creationEntrenamientoDto.DuracionMinutos!.Value;
+
+        ValidarDatosEntrenamiento(fecha, duracionMinutos);
         var rutina = await GetRutinaDelUsuario(idUsuario, creationEntrenamientoDto.RutinaId);
         var registrosSerie = await ArmarRegistrosSerie(creationEntrenamientoDto.Series);
 
         var nuevoEntrenamiento = new Entrenamiento();
 
-        nuevoEntrenamiento.Fecha = creationEntrenamientoDto.Fecha;
-        nuevoEntrenamiento.DuracionMinutos = creationEntrenamientoDto.DuracionMinutos;
+        nuevoEntrenamiento.Fecha = fecha;
+        nuevoEntrenamiento.DuracionMinutos = duracionMinutos;
         nuevoEntrenamiento.Observaciones = creationEntrenamientoDto.Observaciones;
         nuevoEntrenamiento.UsuarioComunId = idUsuario;
         nuevoEntrenamiento.Rutina = rutina;
@@ -59,7 +63,11 @@ public class EntrenamientoService : IEntrenamientoService
     public async Task Update(int idUsuario, int idEntrenamiento, UpdateEntrenamientoDTO updateEntrenamientoDto)
     {
         var entrenamiento = await GetEntrenamientoDelUsuario(idUsuario, idEntrenamiento);
-        ValidarDatosEntrenamiento(updateEntrenamientoDto.Fecha, updateEntrenamientoDto.DuracionMinutos);
+
+        DateTime fecha = updateEntrenamientoDto.Fecha!.Value;
+        int duracionMinutos = updateEntrenamientoDto.DuracionMinutos!.Value;
+
+        ValidarDatosEntrenamiento(fecha, duracionMinutos);
 
         // La rutina se valida solo si cambió. Si el entrenamiento se basó en una rutina que
         // después se dio de baja, se tiene que poder seguir editando sin que dé 404
@@ -72,8 +80,8 @@ public class EntrenamientoService : IEntrenamientoService
 
         var registrosSerie = await ArmarRegistrosSerie(updateEntrenamientoDto.Series);
 
-        entrenamiento.Fecha = updateEntrenamientoDto.Fecha;
-        entrenamiento.DuracionMinutos = updateEntrenamientoDto.DuracionMinutos;
+        entrenamiento.Fecha = fecha;
+        entrenamiento.DuracionMinutos = duracionMinutos;
         entrenamiento.Observaciones = updateEntrenamientoDto.Observaciones;
 
         // Las series anteriores se sacan de la lista y EF las borra de la tabla
@@ -151,24 +159,30 @@ public class EntrenamientoService : IEntrenamientoService
 
         foreach (var s in series)
         {
+            // [Required] también valida cada serie de la lista, así que acá ya vienen todos los campos
+            int ejercicioId = s.EjercicioId!.Value;
+            int numeroSerie = s.NumeroSerie!.Value;
+            float peso = s.Peso!.Value;
+            int repeticiones = s.Repeticiones!.Value;
+
             // El peso puede ser 0 para ejercicios con el peso del cuerpo, como dominadas
-            if (s.NumeroSerie <= 0 || s.Repeticiones <= 0 || s.Peso < 0)
+            if (numeroSerie <= 0 || repeticiones <= 0 || peso < 0)
             {
                 throw new ValidationException("El número de serie y las repeticiones deben ser mayores a cero y el peso no puede ser negativo");
             }
 
-            var ejercicio = await _ejercicioRepository.GetByIdAsync(s.EjercicioId);
+            var ejercicio = await _ejercicioRepository.GetByIdAsync(ejercicioId);
 
             if (ejercicio is null)
             {
-                throw new NotFoundException($"No se encontró el ejercicio con id {s.EjercicioId}");
+                throw new NotFoundException($"No se encontró el ejercicio con id {ejercicioId}");
             }
 
             var registroSerie = new RegistroSerie();
             registroSerie.Ejercicio = ejercicio;
-            registroSerie.NumeroSerie = s.NumeroSerie;
-            registroSerie.Peso = s.Peso;
-            registroSerie.Repeticiones = s.Repeticiones;
+            registroSerie.NumeroSerie = numeroSerie;
+            registroSerie.Peso = peso;
+            registroSerie.Repeticiones = repeticiones;
 
             registroSerieList.Add(registroSerie);
         }
