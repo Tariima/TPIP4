@@ -43,8 +43,8 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
             throw new ConflictException("Ya existe un usuario con ese email");
         }
 
-        // La cuenta se crea ahora pero inactiva, así no puede loguearse hasta que el superadmin apruebe la solicitud.
-        // La contraseña se guarda en la cuenta porque la solicitud no tiene ese dato
+        // La cuenta se crea ya pero inactiva, no puede loguearse hasta que la aprueben.
+        // La contraseña queda en la cuenta porque la solicitud no la guarda
         var nuevoAdmin = new AdminGimnasio();
 
         nuevoAdmin.Nombre = creationSolicitudDto.Nombre;
@@ -70,7 +70,7 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
         return SolicitudCuentaGimnasioDTO.Create(solicitudCreada);
     }
 
-    // El estado es opcional: si no viene se traen todas las solicitudes
+    // sin estado trae todas
     public async Task<List<SolicitudCuentaGimnasioDTO>> GetAll(string? estado)
     {
         EstadoSolicitud? estadoFiltro = null;
@@ -110,7 +110,7 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
             throw new ConflictException("No se puede aprobar porque el gimnasio está dado de baja");
         }
 
-        // La cuenta del admin se busca por el email de la solicitud
+        // la cuenta se busca por el email de la solicitud
         var admin = await _usuarioRepository.GetByEmailAsync(solicitud.EmailSolicitante) as AdminGimnasio;
 
         if (admin is null)
@@ -134,7 +134,7 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
             $"Hola {admin.Nombre}, aprobamos tu cuenta como admin de {solicitud.Gimnasio.Nombre}. Ya podés iniciar sesión.");
     }
 
-    // Al rechazar la cuenta del solicitante queda inactiva, así que no puede loguearse
+    // la cuenta queda inactiva, así que no puede loguearse
     public async Task Rechazar(int idSuperAdmin, int idSolicitud)
     {
         var solicitud = await GetSolicitudPendiente(idSolicitud);
@@ -146,7 +146,7 @@ public class SolicitudCuentaGimnasioService : ISolicitudCuentaGimnasioService
         await _solicitudCuentaGimnasioRepository.UpdateAsync(solicitud);
     }
 
-    // Solo se pueden aprobar o rechazar las solicitudes que todavía están pendientes
+    // solo se resuelven las pendientes
     private async Task<SolicitudCuentaGimnasio> GetSolicitudPendiente(int idSolicitud)
     {
         var solicitud = await _solicitudCuentaGimnasioRepository.GetByIdConGimnasioAsync(idSolicitud);

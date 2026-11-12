@@ -15,7 +15,7 @@ public class ReservaRepository : RepositoryBase<Reserva>, IReservaRepository
         _context = context;
     }
 
-    // Cuántos lugares ya están ocupados en ese horario ese día (las canceladas no cuentan)
+    // lugares ocupados en ese horario y fecha (sin las canceladas)
     public async Task<int> CountConfirmadasAsync(int horarioId, DateTime fecha)
     {
         return await _context.Reservas
@@ -50,7 +50,7 @@ public class ReservaRepository : RepositoryBase<Reserva>, IReservaRepository
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
-    // Reservas de todos los horarios del gimnasio con turno entre esas dos fechas (las dos incluidas)
+    // reservas del gimnasio entre las dos fechas, inclusive
     public async Task<List<Reserva>> GetByGimnasioAsync(int gimnasioId, DateTime desde, DateTime hasta)
     {
         return await _context.Reservas

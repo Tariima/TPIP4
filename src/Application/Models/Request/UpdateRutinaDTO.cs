@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.Request;
 
-// Al editar se manda la rutina completa: la lista de ejercicios reemplaza a la anterior
+// Se manda completa, los ejercicios reemplazan a los anteriores
 public class UpdateRutinaDTO
 {
     [Required(ErrorMessage = "El nombre es requerido.")]

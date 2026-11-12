@@ -2,7 +2,7 @@ using Domain.Entities;
 
 namespace Application.Models;
 
-// No incluye la contraseña para que nunca salga en una respuesta
+// sin la contraseña
 public class UsuarioDTO
 {
     public int Id { get; set; }

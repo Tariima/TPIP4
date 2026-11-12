@@ -15,7 +15,7 @@ public class SuscripcionService : ISuscripcionService
     private readonly SuscripcionSettings _suscripcionSettings;
     private readonly IEmailService _emailService;
 
-    // Cuántos días antes del vencimiento se manda el aviso
+    // días de anticipación del aviso
     private const int DiasAvisoPrevio = 3;
 
     public SuscripcionService(ISuscripcionRepository suscripcionRepository, IPagoRepository pagoRepository, IMercadoPagoService mercadoPagoService, SuscripcionSettings suscripcionSettings, IEmailService emailService)
@@ -31,7 +31,7 @@ public class SuscripcionService : ISuscripcionService
     {
         var suscripcion = await _suscripcionRepository.GetByUsuarioAsync(idUsuario);
 
-        // Si nunca pagó no tiene suscripción
+        // nunca pagó
         if (suscripcion is null)
         {
             throw new NotFoundException("No tenés una suscripción");
@@ -40,14 +40,14 @@ public class SuscripcionService : ISuscripcionService
         return SuscripcionDTO.Create(suscripcion);
     }
 
-    // Sirve para contratar y para renovar: en los dos casos se paga un mes.
-    // La suscripción recién se activa (o se extiende) cuando Mercado Pago confirma el pago
+    // Contratar y renovar es lo mismo: pagar un mes.
+    // Se activa recién cuando MP confirma el pago por el webhook
     public async Task<LinkPagoDTO> Pagar(int idUsuario)
     {
         decimal monto = _suscripcionSettings.MontoMensual;
         var suscripcion = await _suscripcionRepository.GetByUsuarioAsync(idUsuario);
 
-        // La primera vez que paga se crea la suscripción, que queda pendiente hasta que se apruebe el pago
+        // primera vez: queda pendiente hasta que se apruebe el pago
         if (suscripcion is null)
         {
             suscripcion = new Suscripcion();
@@ -60,7 +60,7 @@ public class SuscripcionService : ISuscripcionService
             suscripcion = await _suscripcionRepository.CreateAsync(suscripcion);
         }
 
-        // Primero se guarda el pago para tener su Id, que se le manda a Mercado Pago
+        // el pago se guarda primero para tener el Id que se manda a MP
         var pago = new Pago();
         pago.Fecha = DateTime.Now;
         pago.Monto = monto;
@@ -85,23 +85,21 @@ public class SuscripcionService : ISuscripcionService
         }
         catch
         {
-            // Si Mercado Pago falló (aun después de los reintentos) el pago no se va a poder hacer,
-            // así que se marca como rechazado y se deja seguir el error para que el usuario lo vea
+            // si MP falló (ya con los reintentos) el pago queda rechazado y el error sigue para arriba
             pago.Estado = EstadoPago.Rechazado;
             await _pagoRepository.UpdateAsync(pago);
             throw;
         }
     }
 
-    // Lo ejecuta una vez por día el BackgroundService (VencimientoSuscripcionesService)
+    // Lo llama una vez por día VencimientoSuscripcionesService
     public async Task ProcesarVencimientos()
     {
         await AvisarProximasAVencer();
         await VencerSuscripciones();
     }
 
-    // Avisa a las que vencen dentro de 3 días. Se busca solo ese día (de 00:00 a 00:00 del siguiente),
-    // así cada suscripción entra una sola vez y el aviso no se repite en las corridas de otros días
+    // Las que vencen en 3 días. Se busca solo ese día (00:00 a 00:00) para que el aviso salga una sola vez
     private async Task AvisarProximasAVencer()
     {
         var desde = DateTime.Today.AddDays(DiasAvisoPrevio);
@@ -118,8 +116,7 @@ public class SuscripcionService : ISuscripcionService
         }
     }
 
-    // Pasa a vencidas las que ya pasaron su fecha. Al dejar de estar activas,
-    // en la próxima corrida ya no aparecen y el mail tampoco se repite
+    // Pasa a Vencida las que ya vencieron. Al cambiar de estado no vuelven a entrar
     private async Task VencerSuscripciones()
     {
         var suscripciones = await _suscripcionRepository.GetActivasQueVencenEntreAsync(DateTime.MinValue, DateTime.Now);

@@ -2,7 +2,7 @@ using Domain.Entities;
 
 namespace Application.Models;
 
-// Reserva como la ve el admin del gimnasio: con el usuario que la hizo
+// Vista del admin, incluye quién reservó
 public class ReservaGimnasioDTO
 {
     public int Id { get; set; }

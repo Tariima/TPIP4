@@ -5,7 +5,7 @@ using Domain.Interfaces;
 
 namespace Application.Services;
 
-// Arma los datos de las gráficas a partir de los entrenamientos que ya están guardados
+// Datos para los gráficos, sale todo de los entrenamientos guardados
 public class ProgresoService : IProgresoService
 {
     private readonly IEntrenamientoRepository _entrenamientoRepository;
@@ -33,9 +33,8 @@ public class ProgresoService : IProgresoService
 
         var entrenamientos = await _entrenamientoRepository.GetByUsuarioAsync(idUsuario, desde, hasta);
 
-        // 1. De cada entrenamiento se toman solo las series de este ejercicio, junto con el día
-        // 2. Se agrupan por día (si entrenó dos veces el mismo día cuenta como un solo punto)
-        // 3. De cada día se saca el peso máximo y el volumen
+        // series de este ejercicio -> agrupadas por día -> peso máx y volumen
+        // (dos entrenamientos el mismo día son un solo punto)
         return entrenamientos
             .SelectMany(e => e.RegistrosSerie
                 .Where(rs => rs.EjercicioId == idEjercicio)
@@ -58,7 +57,7 @@ public class ProgresoService : IProgresoService
 
         var entrenamientos = await _entrenamientoRepository.GetByUsuarioAsync(idUsuario, desde, hasta);
 
-        // Se agrupan los entrenamientos por el lunes de su semana y se suman los datos de cada grupo
+        // agrupados por el lunes de cada semana
         return entrenamientos
             .GroupBy(e => InicioDeSemana(e.Fecha))
             .OrderBy(g => g.Key)
@@ -88,8 +87,7 @@ public class ProgresoService : IProgresoService
         }
     }
 
-    // Devuelve el lunes de la semana de esa fecha. DayOfWeek arranca en domingo (0),
-    // por eso se corre para que el lunes quede en 0 y el domingo en 6
+    // Lunes de la semana. DayOfWeek arranca en domingo = 0, de ahí el +6 % 7
     private DateTime InicioDeSemana(DateTime fecha)
     {
         int diasDesdeLunes = ((int)fecha.DayOfWeek + 6) % 7;

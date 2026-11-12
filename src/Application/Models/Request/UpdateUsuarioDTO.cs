@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.Request;
 
-// Datos que se pueden editar del perfil. El email no se cambia y la contraseña tiene su propio endpoint
+// El email no se edita y la contraseña se cambia en /perfil/contrasena
 public class UpdateUsuarioDTO
 {
     [Required(ErrorMessage = "El nombre es requerido.")]

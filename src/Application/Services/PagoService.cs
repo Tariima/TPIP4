@@ -19,10 +19,8 @@ public class PagoService : IPagoService
         _emailService = emailService;
     }
 
-    // Mercado Pago avisa que una orden cambió. No confiamos en el aviso: con el id
-    // consultamos la orden a Mercado Pago y recién ahí actualizamos el pago y la suscripción.
-    // Los casos que no nos sirven se ignoran sin error, porque si respondemos con error
-    // Mercado Pago sigue reintentando el mismo aviso
+    // No confiamos en el aviso: con el id consultamos la orden a MP.
+    // Lo que no sirve se ignora sin error, porque si devolvemos error MP vuelve a mandar el aviso
     public async Task ProcesarNotificacion(NotificacionMercadoPagoDTO notificacion)
     {
         if (notificacion.Type != "order" || string.IsNullOrEmpty(notificacion.Data.Id))
@@ -32,13 +30,13 @@ public class PagoService : IPagoService
 
         var orden = await _mercadoPagoService.GetOrdenAsync(notificacion.Data.Id);
 
-        // Si la orden no existe en Mercado Pago el aviso es falso o está mal
+        // si la orden no existe el aviso es falso o vino mal
         if (orden is null)
         {
             return;
         }
 
-        // En external_reference mandamos el Id de nuestro pago al crear la orden
+        // external_reference = Id de nuestro Pago
         if (!int.TryParse(orden.ReferenciaExterna, out int idPago))
         {
             return;
@@ -46,14 +44,13 @@ public class PagoService : IPagoService
 
         var pago = await _pagoRepository.GetByIdConSuscripcionAsync(idPago);
 
-        // La orden tiene que ser la misma que guardamos para ese pago
+        // tiene que ser la misma orden que guardamos
         if (pago is null || pago.IdExterno != orden.Id)
         {
             return;
         }
 
-        // Si el pago ya se procesó (Mercado Pago puede mandar el mismo aviso más de una vez)
-        // no se hace nada, así no se suma dos veces el mes
+        // MP puede mandar el mismo aviso más de una vez: solo se procesan pendientes, si no se sumaría dos veces el mes
         if (pago.Estado != EstadoPago.Pendiente)
         {
             return;
@@ -80,12 +77,10 @@ public class PagoService : IPagoService
 
             await _pagoRepository.UpdateAsync(pago);
         }
-        // Cualquier otro estado (creada, en proceso) todavía no está definido:
-        // se espera el próximo aviso de Mercado Pago
+        // otros estados (creada, en proceso) todavía no definen nada, se espera el próximo aviso
     }
 
-    // Si la suscripción sigue activa se le suma un mes al vencimiento (renovación, no pierde días).
-    // Si estaba pendiente o vencida arranca hoy y vence en un mes
+    // Si sigue activa se suma un mes al vencimiento (no pierde días). Si no, arranca hoy
     private void ActivarSuscripcion(Suscripcion suscripcion)
     {
         if (suscripcion.Estado == EstadoSuscripcion.Activa && suscripcion.FechaVencimiento > DateTime.Now)

@@ -15,8 +15,7 @@ public class SuscripcionRepository : RepositoryBase<Suscripcion>, ISuscripcionRe
         _context = context;
     }
 
-    // Un usuario es Pro si tiene una suscripción activa que todavía no venció.
-    // Se mira también la fecha porque el proceso que las pasa a vencidas corre una vez por día
+    // Pro = activa y sin vencer. Se mira la fecha también porque el job que las vence corre una vez por día
     public async Task<bool> TieneSuscripcionActivaAsync(int usuarioComunId)
     {
         return await _context.Suscripciones
@@ -25,7 +24,7 @@ public class SuscripcionRepository : RepositoryBase<Suscripcion>, ISuscripcionRe
                 && s.FechaVencimiento > DateTime.Now);
     }
 
-    // Cada usuario tiene una sola suscripción, que se va renovando con pagos nuevos
+    // una suscripción por usuario, se renueva con pagos nuevos
     public async Task<Suscripcion?> GetByUsuarioAsync(int usuarioComunId)
     {
         return await _context.Suscripciones
@@ -33,8 +32,7 @@ public class SuscripcionRepository : RepositoryBase<Suscripcion>, ISuscripcionRe
             .FirstOrDefaultAsync(s => s.UsuarioComunId == usuarioComunId);
     }
 
-    // Suscripciones activas que vencen en el rango [desde, hasta).
-    // Trae el usuario porque hace falta su email para avisarle
+    // Activas que vencen en [desde, hasta). Trae el usuario para el mail
     public async Task<List<Suscripcion>> GetActivasQueVencenEntreAsync(DateTime desde, DateTime hasta)
     {
         return await _context.Suscripciones

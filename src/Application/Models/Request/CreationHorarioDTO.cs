@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.Request;
 
-// Se usa para el alta y para la modificación. Las horas van como texto con formato HH:mm (ej: "08:30")
+// Alta y modificación. Las horas van como "HH:mm"
 public class CreationHorarioDTO
 {
     [Required(ErrorMessage = "El día de la semana es requerido.")]

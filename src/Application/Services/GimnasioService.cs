@@ -22,7 +22,7 @@ public class GimnasioService : IGimnasioService
         return GimnasioDTO.CreateList(gimnasioList);
     }
 
-    // Trae también los dados de baja, para el superadmin
+    // incluye los dados de baja (es para el superadmin)
     public async Task<List<GimnasioDTO>> GetAll()
     {
         var gimnasioList = await _gimnasioRepository.GetAllAsync();
@@ -63,8 +63,7 @@ public class GimnasioService : IGimnasioService
         await _gimnasioRepository.UpdateAsync(gimnasio);
     }
 
-    // Baja lógica: el gimnasio queda en la base para no perder las reservas y solicitudes que lo usan.
-    // Sus horarios y beneficios también se dan de baja, así no se pueden reservar ni ver
+    // Baja lógica para no perder reservas y solicitudes. También desactiva sus horarios y beneficios
     public async Task Delete(int idGimnasio)
     {
         var gimnasio = await _gimnasioRepository.GetByIdConHorariosYBeneficiosAsync(idGimnasio);
@@ -89,7 +88,7 @@ public class GimnasioService : IGimnasioService
         await _gimnasioRepository.UpdateAsync(gimnasio);
     }
 
-    // Devuelve el gimnasio solo si existe y está activo
+    // 404 si no existe o está dado de baja
     private async Task<Gimnasio> GetGimnasioActivo(int idGimnasio)
     {
         var gimnasio = await _gimnasioRepository.GetByIdAsync(idGimnasio);

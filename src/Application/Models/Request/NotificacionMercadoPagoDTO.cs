@@ -1,8 +1,8 @@
 namespace Application.Models.Request;
 
-// Lo que manda Mercado Pago al webhook. Ej:
+// Body que manda MP al webhook, ej:
 // { "action": "order.processed", "type": "order", "data": { "id": "ORD01JYH1Z1YJN4HZ8J3Q0RB3YP6D" } }
-// Solo usamos el tipo y el id de la orden; el resto lo consultamos nosotros
+// Solo usamos type y data.id
 public class NotificacionMercadoPagoDTO
 {
     public string Type { get; set; } = string.Empty;

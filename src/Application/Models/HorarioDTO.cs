@@ -17,7 +17,7 @@ public class HorarioDTO
         var dto = new HorarioDTO();
         dto.Id = horario.Id;
         dto.DiaSemana = horario.DiaSemana;
-        // Solo se muestra la hora, la fecha que se guarda no se usa
+        // la fecha guardada no importa, solo la hora
         dto.HoraInicio = horario.HoraInicio.ToString("HH:mm");
         dto.HoraFin = horario.HoraFin.ToString("HH:mm");
         dto.CupoMaximo = horario.CupoMaximo;

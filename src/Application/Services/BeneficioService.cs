@@ -27,7 +27,7 @@ public class BeneficioService : IBeneficioService
         int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
         var beneficioList = await _beneficioRepository.GetActivosByGimnasioAsync(gimnasioId);
 
-        // Los que vencen antes primero
+        // los que vencen antes, arriba
         return BeneficioDTO.CreateList(beneficioList.OrderBy(b => b.VigenteHasta).ToList());
     }
 
@@ -43,7 +43,7 @@ public class BeneficioService : IBeneficioService
     {
         int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
 
-        // No tiene sentido cargar un beneficio que ya terminó
+        // no tiene sentido cargar uno que ya terminó
         if (creationBeneficioDto.VigenteHasta!.Value.Date < DateTime.Today)
         {
             throw new ValidationException("La fecha de fin de vigencia no puede ser anterior a hoy");
@@ -69,7 +69,7 @@ public class BeneficioService : IBeneficioService
         await _beneficioRepository.UpdateAsync(beneficio);
     }
 
-    // Baja lógica: el beneficio deja de mostrarse pero queda en la base como historial del gimnasio
+    // Baja lógica, queda como historial del gimnasio
     public async Task Delete(int idAdmin, int idBeneficio)
     {
         int gimnasioId = await GetGimnasioDelAdmin(idAdmin);
@@ -80,7 +80,7 @@ public class BeneficioService : IBeneficioService
         await _beneficioRepository.UpdateAsync(beneficio);
     }
 
-    // Solo para usuarios Pro: los gimnasios que hoy tienen beneficios vigentes, cada uno con los suyos
+    // Solo Pro
     public async Task<List<GimnasioConBeneficiosDTO>> GetVigentes(int idUsuario)
     {
         if (!await _suscripcionRepository.TieneSuscripcionActivaAsync(idUsuario))
@@ -90,7 +90,7 @@ public class BeneficioService : IBeneficioService
 
         var beneficioList = await _beneficioRepository.GetVigentesAsync(DateTime.Today);
 
-        // Se agrupan por gimnasio para mostrar cada gimnasio una sola vez con su lista de beneficios
+        // un item por gimnasio con sus beneficios
         return beneficioList
             .GroupBy(b => b.Gimnasio)
             .OrderBy(g => g.Key.Nombre)
@@ -105,17 +105,15 @@ public class BeneficioService : IBeneficioService
             .ToList();
     }
 
-    // Valida los datos que mandó el admin y los pasa al beneficio.
-    // Lo usan Create y Update, así las reglas están en un solo lugar
+    // Validaciones comunes de Create y Update
     private void CargarDatos(Beneficio beneficio, CreationBeneficioDTO creationBeneficioDto)
     {
-        // Los campos son nullables en el DTO, pero si llegamos acá ya vienen: [Required] lo valida antes.
-        // Por eso se puede usar .Value sin riesgo
+        // .Value es seguro, el [Required] ya validó que vengan
         float porcentajeDescuento = creationBeneficioDto.PorcentajeDescuento!.Value;
         DateTime vigenteDesde = creationBeneficioDto.VigenteDesde!.Value.Date;
         DateTime vigenteHasta = creationBeneficioDto.VigenteHasta!.Value.Date;
 
-        // Puede ser 0 para beneficios que no son un descuento, ej: "primera clase gratis"
+        // 0 vale para cosas tipo "primera clase gratis"
         if (porcentajeDescuento < 0 || porcentajeDescuento > 100)
         {
             throw new ValidationException("El porcentaje de descuento tiene que estar entre 0 y 100");
@@ -134,8 +132,7 @@ public class BeneficioService : IBeneficioService
         beneficio.VigenteHasta = vigenteHasta;
     }
 
-    // Cada admin maneja solo los beneficios de su gimnasio. El gimnasio sale de su cuenta, no de lo que manda el cliente.
-    // Es la misma regla que usan los horarios
+    // El gimnasio sale de la cuenta del admin, nunca del request (igual que en horarios)
     private async Task<int> GetGimnasioDelAdmin(int idAdmin)
     {
         var admin = await _usuarioRepository.GetByIdAsync(idAdmin) as AdminGimnasio;
@@ -155,8 +152,7 @@ public class BeneficioService : IBeneficioService
         return gimnasio.Id;
     }
 
-    // Devuelve el beneficio solo si existe, está activo y es del gimnasio del admin.
-    // Si es de otro gimnasio también da 404, así no se sabe que existe
+    // 404 también si es de otro gimnasio, para no dar pistas de que existe
     private async Task<Beneficio> GetBeneficioDelGimnasio(int gimnasioId, int idBeneficio)
     {
         var beneficio = await _beneficioRepository.GetByIdAsync(idBeneficio);

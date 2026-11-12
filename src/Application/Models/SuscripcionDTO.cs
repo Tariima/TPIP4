@@ -16,8 +16,7 @@ public class SuscripcionDTO
         var dto = new SuscripcionDTO();
         dto.Estado = suscripcion.Estado.ToString();
 
-        // Si ya pasó la fecha pero el proceso diario todavía no la marcó como vencida,
-        // se muestra vencida igual. Es la misma regla que se usa para saber si el usuario es Pro
+        // Si ya venció pero el job diario todavía no la actualizó, se muestra Vencida igual
         if (suscripcion.Estado == EstadoSuscripcion.Activa && suscripcion.FechaVencimiento <= DateTime.Now)
         {
             dto.Estado = EstadoSuscripcion.Vencida.ToString();
@@ -26,7 +25,7 @@ public class SuscripcionDTO
         dto.FechaInicio = suscripcion.FechaInicio;
         dto.FechaVencimiento = suscripcion.FechaVencimiento;
         dto.MontoMensual = suscripcion.MontoMensual;
-        // Los pagos del más nuevo al más viejo
+        // más nuevos primero
         dto.Pagos = PagoDTO.CreateList(suscripcion.Pagos.OrderByDescending(p => p.Fecha).ToList());
 
         return dto;

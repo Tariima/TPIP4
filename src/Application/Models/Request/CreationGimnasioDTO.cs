@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.Request;
 
-// Se usa para el alta y para la modificación, porque los datos que se cargan son los mismos
+// Sirve para alta y modificación
 public class CreationGimnasioDTO
 {
     [Required(ErrorMessage = "El nombre es requerido.")]

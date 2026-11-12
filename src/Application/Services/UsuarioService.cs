@@ -18,7 +18,7 @@ public class UsuarioService : IUsuarioService
         _passwordHasher = passwordHasher;
     }
 
-    // Registro de un usuario común (los admins de gimnasio entran por la solicitud de cuenta)
+    // Solo usuarios comunes, los admins entran por la solicitud de cuenta
     public async Task<UsuarioDTO> Create(CreationUsuarioDTO creationUsuarioDto)
     {
         var usuarioExistente = await _usuarioRepository.GetByEmailAsync(creationUsuarioDto.Email);
@@ -94,7 +94,7 @@ public class UsuarioService : IUsuarioService
             throw new NotFoundException($"No se encontró el usuario con id {id}");
         }
 
-        // Se pide la contraseña actual para que no se pueda cambiar solo con el token
+        // se pide la actual para que no alcance con tener el token
         if (!_passwordHasher.Verify(updateContrasenaDto.ContrasenaActual, usuario.Contrasena))
         {
             throw new ValidationException("La contraseña actual es incorrecta");

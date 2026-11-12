@@ -1,6 +1,6 @@
 namespace Application.Models;
 
-// Lo que se le devuelve al usuario cuando quiere pagar: el link de Mercado Pago
+// Respuesta de /pagar
 public class LinkPagoDTO
 {
     public int IdPago { get; set; }

@@ -25,7 +25,7 @@ public class AuthenticationService : ICustomAuthenticationService
 
     public async Task<string> Autenticar(CredentialsDTO credentials)
     {
-        // 1. ¿Existe el usuario, está activo y la contraseña es correcta?
+        // usuario existe, está activo y la contraseña coincide
         var usuario = await _usuarioRepository.GetByEmailAsync(credentials.Email);
 
         if (usuario is null || !usuario.Activo || !_passwordHasher.Verify(credentials.Contrasena, usuario.Contrasena))
@@ -33,12 +33,12 @@ public class AuthenticationService : ICustomAuthenticationService
             throw new InvalidCredentialsException();
         }
 
-        // 2. Clave secreta + algoritmo de firma
+        // clave + algoritmo de firma
         var securityKey = new SymmetricSecurityKey(
             Encoding.ASCII.GetBytes(_config["Authentication:SecretForKey"]!));
         var signature = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        // 3. Claims que viajan en el payload. El rol es el tipo de usuario (UsuarioComun, AdminGimnasio o SuperAdmin)
+        // claims del payload. role = tipo de usuario (UsuarioComun, AdminGimnasio o SuperAdmin)
         var claimsForToken = new List<Claim>
         {
             new("sub", usuario.Id.ToString()),
@@ -46,7 +46,7 @@ public class AuthenticationService : ICustomAuthenticationService
             new("role", usuario.GetType().Name)
         };
 
-        // 4. El token: issuer, audience, claims, desde, hasta y firma
+        // issuer, audience, claims, validez (1 hora) y firma
         var jwtSecurityToken = new JwtSecurityToken(
             _config["Authentication:Issuer"],
             _config["Authentication:Audience"],
@@ -55,7 +55,7 @@ public class AuthenticationService : ICustomAuthenticationService
             DateTime.UtcNow.AddHours(1),
             signature);
 
-        // 5. Serializarlo a header.payload.signature
+        // a string: header.payload.signature
         return new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
     }
 }

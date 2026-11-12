@@ -21,8 +21,7 @@ public class BeneficioRepository : RepositoryBase<Beneficio>, IBeneficioReposito
             .ToListAsync();
     }
 
-    // Beneficios vigentes en esa fecha, de gimnasios que no estén dados de baja.
-    // Se compara solo el día para que el primer y el último día de vigencia cuenten completos
+    // Vigentes en esa fecha y de gimnasios activos. Con .Date entran completos el primer y el último día
     public async Task<List<Beneficio>> GetVigentesAsync(DateTime fecha)
     {
         return await _context.Beneficios

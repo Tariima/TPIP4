@@ -2,7 +2,7 @@ using Application.Models;
 
 namespace Application.Interfaces;
 
-// Servicio externo de pagos. La implementación está en Infrastructure porque habla por HTTP con Mercado Pago
+// La implementación está en Infrastructure (llama a la API de MP)
 public interface IMercadoPagoService
 {
     Task<OrdenMercadoPagoDTO> CrearOrdenAsync(int idPago, decimal monto, string descripcion);

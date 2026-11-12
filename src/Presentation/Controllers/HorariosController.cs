@@ -9,7 +9,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// Crear, modificar y desactivar horarios se limita a AdminGimnasio en cada endpoint
+// el rol de cada endpoint se restringe abajo
 [Authorize(Roles = "AdminGimnasio,UsuarioComun")]
 public class HorariosController : ControllerBase
 {

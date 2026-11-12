@@ -1,6 +1,6 @@
 namespace Application.Models;
 
-// Un punto de la gráfica semanal. La semana va de lunes a domingo
+// Una semana (lunes a domingo) del gráfico semanal
 public class ResumenSemanalDTO
 {
     public DateTime InicioSemana { get; set; }

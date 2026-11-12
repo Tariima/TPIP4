@@ -9,7 +9,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// Reservar y cancelar es de UsuarioComun, ver las reservas del gimnasio es de AdminGimnasio
+// reservar/cancelar: UsuarioComun. Ver reservas y estadísticas del gimnasio: AdminGimnasio
 [Authorize(Roles = "UsuarioComun,AdminGimnasio")]
 public class ReservasController : ControllerBase
 {
